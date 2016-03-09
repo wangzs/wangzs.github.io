@@ -91,9 +91,46 @@ $ git pull origin  hexo:master
 $ git push origin master:hexo
 ```
 
+-------
+## 7. 新增Menu项
+* 添加menu item
+```
+$ hexo new page "libs"
+```
+* 修改`themes\_config.yml`文件中menu下选项
+```
+  menu:
+    home: /
+    ...
+    libs: /Libs 
+  ```
+* 添加对应menu item的icon,自行去[Font-Awesome][4]网站查自己想放的icon
+  ```
+  menu_icons:
+    enable: true
+    # Icon Mapping.
+    home: home
+    ...
+    libs: gears   # 添加的新的
+  ```
+* 修改`themes\next\languages\zh-Hans.yml`中menu部分（根据自己设定的语言添加相应的修改）:
+  ```
+  menu:
+    home: 首页
+    ...
+    libs: Libs
+  ```
 
-## 他人的搭建教程
-[Github-Hexo搭建博客教程][3]
+
+
+
+
+
+-----
+** 别人用Hexo搭建博客的相关教程 **
+> [Hexo搭建Github博客教程][3]
+  [NexT主题配置相关][5]
+  [Hexo静态博客搭建教程][6]
 
 
 
@@ -104,3 +141,6 @@ $ git push origin master:hexo
 [1]:http://nodejs.org/
 [2]:http://theme-next.iissnan.com/theme-settings.html
 [3]:http://www.selfrebuild.net/2015/06/24/Github-Hexo搭建博客教程/
+[4]:http://fortawesome.github.io/Font-Awesome/icons/
+[5]:http://zhiho.github.io/2015/09/29/hexo-next/
+[6]:http://lovenight.github.io/2015/11/10/Hexo-3-1-1-静态博客搭建指南/
