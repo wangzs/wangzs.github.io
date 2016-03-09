@@ -1,7 +1,6 @@
 title: Hexo配置博客
 date: 2016-03-08 23::15
-type: "tags"
-comments: false
+tag: [Hexo, github]
 ---
 
 # Hexo配置过程
@@ -23,6 +22,7 @@ npm install hexo --save
 // 查看安装的hexo信息
 hexo -v
 ```
+<!--more-->
 
 ## 3. 配置hexo
 ```sh
@@ -92,6 +92,10 @@ $ git push origin master:hexo
 ```
 
 
+## 他人的搭建教程
+[Github-Hexo搭建博客教程][3]
+
+
 
 
 
@@ -99,3 +103,4 @@ $ git push origin master:hexo
 
 [1]:http://nodejs.org/
 [2]:http://theme-next.iissnan.com/theme-settings.html
+[3]:http://www.selfrebuild.net/2015/06/24/Github-Hexo搭建博客教程/

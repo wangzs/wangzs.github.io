@@ -1,7 +1,6 @@
 title: Android之事件分发基础
 date: 2016-03-08 20:36
-type: "tags"
-comments: false
+tag: Android
 ---
 
 # Android事件分发
@@ -11,6 +10,7 @@ touch事件发生时，会通过该函数一层一层的下发，如一个Activi
 
 * `public boolean onInterceptTouchEvent(MotionEvent ev)`（ViewGroup和其子类才有）:
 如果上层`dispatchTouchEvent`到该层ViewGroup，此层`onInterceptTouchEvent`返回了true，则会拦截touch事件，下层的ViewGroup或View都不会再触发`dispatchTouchEvent`；
+<!--more-->
 
 * `public boolean onTouchEvent(MotionEvent event)`(响应touch事件):
 会在相应控件执行`setOnTouchListener`中的onTouch执行结束（且返回值为false）后才执行`onTouchEvent`中的逻辑。

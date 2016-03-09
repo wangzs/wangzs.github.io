@@ -1,7 +1,6 @@
 title: JNI使用方法
 date: 2016-03-09  08:38
-type: "tags"
-comments: false
+tag: [Android, JNI]
 ---
 
 # [Java Native Interface][0]
@@ -24,6 +23,8 @@ comments: false
  // 编译改java文件为对应的"HelloJNI.class"
  > javac HelloJNI.java
 ```
+<!--more-->
+
 * 在C/C++层创建native的实际实现
 ```java
 	// 先通过javah生产对应的C/C++头文件（注意调用javah时其所在的当前目录）
