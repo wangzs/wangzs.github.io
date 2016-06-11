@@ -79,9 +79,9 @@ scheme: Mist
 social_icons:
   enable: true
   # Icon Mappings
-  GitHub: github
-  Twitter: twitter
-  Weibo: weibo
+  github: github
+  twitter: twitter
+  weibo: weibo
 
 
 # Sidebar Avatar
