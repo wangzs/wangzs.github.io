@@ -11,7 +11,7 @@ tag: [Android, Framework]
 
 >  [ContextImpl构造函数][5]是私有成员，`ContextImpl`对象的的创建可以通过`createSystemContext`/`createAppContext`和`createActivityContext`这三个静态成员函数来创建。
 
-
+<!--more-->
 
 ## [createSystemContext函数][10]分析
 * ActivityThread中[getSystemContext函数][11]调用了[createSystemContext函数][10]，将ActivityThread的this传给了[createSystemContext函数][10]，而[getSystemContext函数][11]在[SystemServer][12]类中有调用；

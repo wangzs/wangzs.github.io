@@ -65,6 +65,18 @@ hexo s
 cd themes/next
 git pull origin master 
 ```
+修改页面的显示大小，需要修改文件`themes\next\source\css_variables\custom.styl`，添加如下内容：
+
+```styl
+// 修改成你期望的宽度
+$content-desktop = 860px
+
+// 当视窗超过 1600px 后的宽度
+$content-desktop-large = 900px
+```
+
+
+
 **[主题详细配置][2]**
 
 ## 5. 发布到github.io
@@ -103,7 +115,7 @@ $ hexo new page "libs"
     home: /
     ...
     libs: /Libs 
-  ```
+```
 * 添加对应menu item的icon,自行去[Font-Awesome][4]网站查自己想放的icon
   ```
   menu_icons:
@@ -129,8 +141,8 @@ $ hexo new page "libs"
 -----
 ** 别人用Hexo搭建博客的相关教程 **
 > [Hexo搭建Github博客教程][3]
-  [NexT主题配置相关][5]
-  [Hexo静态博客搭建教程][6]
+>   [NexT主题配置相关][5]
+>   [Hexo静态博客搭建教程][6]
 
 
 
@@ -138,9 +150,9 @@ $ hexo new page "libs"
 
 
 
-[1]:http://nodejs.org/
-[2]:http://theme-next.iissnan.com/theme-settings.html
-[3]:http://www.selfrebuild.net/2015/06/24/Github-Hexo搭建博客教程/
-[4]:http://fortawesome.github.io/Font-Awesome/icons/
-[5]:http://zhiho.github.io/2015/09/29/hexo-next/
-[6]:http://lovenight.github.io/2015/11/10/Hexo-3-1-1-静态博客搭建指南/
+[1]: http://nodejs.org/
+[2]: http://theme-next.iissnan.com/theme-settings.html
+[3]: http://www.selfrebuild.net/2015/06/24/Github-Hexo搭建博客教程/
+[4]: http://fortawesome.github.io/Font-Awesome/icons/
+[5]: http://zhiho.github.io/2015/09/29/hexo-next/
+[6]: http://lovenight.github.io/2015/11/10/Hexo-3-1-1-静态博客搭建指南/
