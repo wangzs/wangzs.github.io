@@ -163,63 +163,63 @@ int main(int argc __unused, char** argv)
 ## addService的大致流程
 * [RadioService进程空间] 在RadioService进程中，调用`defaultServiceManager()`获取到ServiceManager的客户端代理：
 > 1. ServiceManager在客户端这边的代理类型是BpServiceManager，每个进程中都是有一个唯一的实例，即`gDefaultServiceManager`
-  2. 本身RadioService属于Server，但是对于ServiceManager进程（Server）来说，RadioService又是属于Client，需要将RadioService注册到ServiceManager中管理
+  1. 本身RadioService属于Server，但是对于ServiceManager进程（Server）来说，RadioService又是属于Client，需要将RadioService注册到ServiceManager中管理
 
 * [RadioService进程空间] addService的参数中会创建`new RadioService()`对象
 > 1. RadioService对象创建时，会打开binder设备，内核空间和进程空间建立一个大小为（1M-8K）的共享内存区
-  2. 在打开binder设备时，在内核中会创建一个与RadioService进程相关的`binder_proc`对象
+  1. 在打开binder设备时，在内核中会创建一个与RadioService进程相关的`binder_proc`对象
 
 * [RadioService进程空间] BpServiceManager的addService逻辑
 > 1. 向Parcel中主要设置的内容（需要传到binder内核）：服务的name和服务的对象（就是RadioService服务，在写入服务对象(writeStrongBinder)的时候，`writeStrongBinder`函数会调用`flatten_binder`函数，而该函数调用service的localBinder()获取binder引用或者实体，因为此处为本地service实体不为空，则此处设置了`flat_binder_object`类型的type成员为`BINDER_TYPE_BINDER`;
-  2. BpServiceManager的父类BpInterface<IServiceManager>的父类BpRefBase中一个重要成员`IBinder* mRemote`，该mRemote就是获取`gDefaultServiceManager`过程中，创建的一个handle为0的BpBinder对象；
-  3. addService最后调用到该BpBinder的`transact`函数，BpBinder的`transact`函数的第一参数code实际代表的是IServiceManager提供的功能（get/check/add/list）,就类似将不同的函数功能映射到code上；
-  4. `transact`函数实际调用`IPCThreadState::self()`对象的`transact`函数；IPCThreadState是线程相关的类，进程内不同进程会产生不同的`IPCThreadState::self()`对象；
-  5. 在BpBinder中的`transact`函数内，会用到handle（此处的就是ServiceManager的handle），作为参数传到IPCThreadState的`transact`函数中；
+  1. BpServiceManager的父类BpInterface<IServiceManager>的父类BpRefBase中一个重要成员`IBinder* mRemote`，该mRemote就是获取`gDefaultServiceManager`过程中，创建的一个handle为0的BpBinder对象；
+  2. addService最后调用到该BpBinder的`transact`函数，BpBinder的`transact`函数的第一参数code实际代表的是IServiceManager提供的功能（get/check/add/list）,就类似将不同的函数功能映射到code上；
+  3. `transact`函数实际调用`IPCThreadState::self()`对象的`transact`函数；IPCThreadState是线程相关的类，进程内不同进程会产生不同的`IPCThreadState::self()`对象；
+  4. 在BpBinder中的`transact`函数内，会用到handle（此处的就是ServiceManager的handle），作为参数传到IPCThreadState的`transact`函数中；
 
 * [RadioService进程空间] IPCThreadState的transact逻辑：
 > 1. 将handle、对应了IServiceManager的函数功能的code、传输的parcel数据（server name和obj）放到`binder_transaction_data`类型对象中
-  2. cmd + `binder_transaction_data`再被打包到parcel中（cmd命令为BC_TRANSACTION），此时的parcel才是真正即将从用户空间传到binder内核空间的数据（此处的cmd表示了transact的类型，而上面的code实际表示了server中提供的某函数服务）
-  3. 打包完cmd和具体的通信数据后，进入`waitForResponse`函数；
-  
+  1. cmd + `binder_transaction_data`再被打包到parcel中（cmd命令为BC_TRANSACTION），此时的parcel才是真正即将从用户空间传到binder内核空间的数据（此处的cmd表示了transact的类型，而上面的code实际表示了server中提供的某函数服务）
+  2. 打包完cmd和具体的通信数据后，进入`waitForResponse`函数；
+
 * [RadioService进程空间] IPCThreadState的waitForResponse逻辑：
   > 1. `waitForResponse`函数中`while(1)`循环中，首先调用`talkWithDriver`与binder驱动打交道；
-    2. `talkWithDriver`函数中，将上面打包的parcel数据放到`binder_write_read`中，此类型数据是实际用于同binder驱动交互的数据格式；
-    3. 设置好`binder_write_read`类型数据后，正式调用`ioctl`开始与binder驱动通信了,其第一个参数是binder设备fd，第二个是binder驱动通信最原始cmd类型BINDER_WRITE_READ（只有5种类型），第三个参数类型是用于用户空间和内核空间互相传输数据的类型
+    1. `talkWithDriver`函数中，将上面打包的parcel数据放到`binder_write_read`中，此类型数据是实际用于同binder驱动交互的数据格式；
+    2. 设置好`binder_write_read`类型数据后，正式调用`ioctl`开始与binder驱动通信了,其第一个参数是binder设备fd，第二个是binder驱动通信最原始cmd类型BINDER_WRITE_READ（只有5种类型），第三个参数类型是用于用户空间和内核空间互相传输数据的类型
 
 * [Binder内核空间] 用户空间调用的`ioctl`会调用到内核空间的`binder_ioctl`函数：
 > 1. 根据ioctl调用时的cmd类型BINDER_WRITE_READ，进入了内核中的`binder_ioctl_write_read`函数
-  2. `binder_ioctl_write_read`函数的最后一个参数是binder_thread类型，所以在进入`binder_ioctl_write_read`函数前会根据`binder_proc`对象在内核中创建一个`binder_thread`对象，`binder_proc`的对象是在`RadioService`构造时打开binder时创建的；
+  1. `binder_ioctl_write_read`函数的最后一个参数是binder_thread类型，所以在进入`binder_ioctl_write_read`函数前会根据`binder_proc`对象在内核中创建一个`binder_thread`对象，`binder_proc`的对象是在`RadioService`构造时打开binder时创建的；
 
 * [Binder内核空间] 进入内核的`binder_ioctl_write_read`函数：
 > 1. 首先需要将用户空间的数据拷贝到内核中`binder_write_read`类型bwr局部对象中；
-  2. 当bwr中write_size（即用户空间传过来的数据大小）大于0，则需要执行`binder_thread_write`内核函数
-  3. 当bwr中read_size（即内核空间需要传给用户空间数据的大小）大于0，则需要执行`binder_thread_read`内核函数；执行完`binder_thread_read`后，检查此RadioService进程在内核中`binder_proc`对象中的todo事务列表是否为空，不为空，则唤醒`proc->wait`队列中的线程开始干活（注册本服务过程中，todo为空）
-  4. 内核中的任务执行完，还需要将返回的数据从内核中拷贝到用户空间。
+  1. 当bwr中write_size（即用户空间传过来的数据大小）大于0，则需要执行`binder_thread_write`内核函数
+  2. 当bwr中read_size（即内核空间需要传给用户空间数据的大小）大于0，则需要执行`binder_thread_read`内核函数；执行完`binder_thread_read`后，检查此RadioService进程在内核中`binder_proc`对象中的todo事务列表是否为空，不为空，则唤醒`proc->wait`队列中的线程开始干活（注册本服务过程中，todo为空）
+  3. 内核中的任务执行完，还需要将返回的数据从内核中拷贝到用户空间。
 
 * [Binder内核空间] 内核的`binder_thread_write`函数（用户空间数据->内核空间）执行逻辑：
 > 1. 读出RadioService进程调用ServiceManager的transact函数时传入的cmd（BC_TRANSACTION），并进入对应的case中，将用户空间的存放了handle、ServiceManager的addService函数对应的code、RadioService服务的名和对象的binder_transaction_data类型对象拷贝到内核空间的binder_transaction_data类型对象tr中；
-  2. 执行`binder_transaction`内核函数，传到该函数的最后一个参数根据cmd是否等于BC_REPLY表示是否需要replay，此处不需要replay，进入非replay条件句；
-  3. 进入`binder_transaction`内核函数的非replay条件句后，因为注册service传入的handle为0，则直接将ServiceManager的binder实例（binder_node类型）赋给target_node变量；创建binder_transaction对象，并将本次执行的进程/线程、ServiceManager工作的进程/线程、以及前面拷贝到内核空间的`binder_transaction_data`类型对象中的code、flags、buffer等数据赋值给刚刚的`binder_transaction`对象（其buffer成员的内存是在ServiceManager进程中分配的）；
-  4. `binder_transaction`对象成员赋值完，根据在RadioService进程包裹IBinder时设置了`flat_binder_object`成员type为`BINDER_TYPE_BINDER`，进入对应的处理case；
-  5. 查询是否有当前服务的binder实体（binder_node），此时没有，创建`binder_node`的RadioService的内核实体（拥有跟该service相关进程、线程等信息）。并为ServerManager进程添加对该RadioService binder实体的引用；同时会设置flat_binder_object的fp对象type为BINDER_TYPE_HANDLE，因为该fp修改其实作用在binder_transaction类型t数据中（其实就是type类型在开始是因为RadioService注册，属于本地，填写的是BINDER_TYPE_BINDER，而这部分数据在注册的过程中需要传给ServerManager，ServiceManager只能是引用，所以再给事务对象操作过程中，将类型设置成了BINDER_TYPE_HANDLE）
-  6. 完成注册事务对象的设置后，将此事务添加到ServiceManager中的线程的todo列表中；此时ServiceManager线程处于休眠状态，将其唤醒处理本次注册事务；
-  
+  1. 执行`binder_transaction`内核函数，传到该函数的最后一个参数根据cmd是否等于BC_REPLY表示是否需要replay，此处不需要replay，进入非replay条件句；
+  2. 进入`binder_transaction`内核函数的非replay条件句后，因为注册service传入的handle为0，则直接将ServiceManager的binder实例（binder_node类型）赋给target_node变量；创建binder_transaction对象，并将本次执行的进程/线程、ServiceManager工作的进程/线程、以及前面拷贝到内核空间的`binder_transaction_data`类型对象中的code、flags、buffer等数据赋值给刚刚的`binder_transaction`对象（其buffer成员的内存是在ServiceManager进程中分配的）；
+  3. `binder_transaction`对象成员赋值完，根据在RadioService进程包裹IBinder时设置了`flat_binder_object`成员type为`BINDER_TYPE_BINDER`，进入对应的处理case；
+  4. 查询是否有当前服务的binder实体（binder_node），此时没有，创建`binder_node`的RadioService的内核实体（拥有跟该service相关进程、线程等信息）。并为ServerManager进程添加对该RadioService binder实体的引用；同时会设置flat_binder_object的fp对象type为BINDER_TYPE_HANDLE，因为该fp修改其实作用在binder_transaction类型t数据中（其实就是type类型在开始是因为RadioService注册，属于本地，填写的是BINDER_TYPE_BINDER，而这部分数据在注册的过程中需要传给ServerManager，ServiceManager只能是引用，所以再给事务对象操作过程中，将类型设置成了BINDER_TYPE_HANDLE）
+  5. 完成注册事务对象的设置后，将此事务添加到ServiceManager中的线程的todo列表中；此时ServiceManager线程处于休眠状态，将其唤醒处理本次注册事务；
+
 * [Binder内核空间] 内核的`binder_thread_read`函数（内核空间->用户空间数据）执行逻辑：
 > 1. 因bwr的的consume为0，所以会设回一个BR_NOOP值到RadioService所在进程
-  2. 在上面的binder_transaction中，设置了tcomplete的type为BINDER_WORK_TRANSACTION_COMPLETE事务到thread的todo列表中，故thread的todo列表不为空，即暂时RadioService进程还不处于等待工作阶段；
-  3. 进入while循环，取出todo中的事务，即去除了type为BINDER_WORK_TRANSACTION_COMPLETE的事务，进入该类型处理域中，设回值为BR_TRANSACTION_COMPLETE的cmd到用户空间，然后释放该事务内存；
-  4. 因其中的t为null，continue到循环开始处，此时todo列表为空，则退出循环。最后设置consume的值，结束binder_thread_read内的工作。
+  1. 在上面的binder_transaction中，设置了tcomplete的type为BINDER_WORK_TRANSACTION_COMPLETE事务到thread的todo列表中，故thread的todo列表不为空，即暂时RadioService进程还不处于等待工作阶段；
+  2. 进入while循环，取出todo中的事务，即去除了type为BINDER_WORK_TRANSACTION_COMPLETE的事务，进入该类型处理域中，设回值为BR_TRANSACTION_COMPLETE的cmd到用户空间，然后释放该事务内存；
+  3. 因其中的t为null，continue到循环开始处，此时todo列表为空，则退出循环。最后设置consume的值，结束binder_thread_read内的工作。
 
 * [RadioService进程空间] 内核空间逻辑处理完，回到了用户空间的`talkWithDriver`函数内，继续执行进入内核空间`ioctl`后面的代码：
 > 1. 清除mOut数据，同时设置mIn的大小和数据位置（内核应该将数据传回了）用于后面的读出；
-  2. 执行完一次`talkWithDriver`函数，此时仍然在`IPCThreadState::waitForResponse`函数内的while循环内，读出mIn内的第一个整数BR_NOOP(内核中thread_read函数中设置的)，调用`executeCommand`函数，根据其cmd值，不做任何事；
-  3. 回到while循环的开始，调用`talkWithDriver`函数，因为mIn内还有一个数据未读出，既是bwr未做好读的准备，不会进行ioctl，直接返回了NO_ERROR
-  4. 继续读出mIn中的`BR_TRANSACTION_COMPLETE`，进入对应case，因为最开始调用addService时，传给`IPCThreadState::self()->transact`函数reply参数了，即此时不会finish，会继续待在`IPCThreadState::waitForResponse`函数内；
+  1. 执行完一次`talkWithDriver`函数，此时仍然在`IPCThreadState::waitForResponse`函数内的while循环内，读出mIn内的第一个整数BR_NOOP(内核中thread_read函数中设置的)，调用`executeCommand`函数，根据其cmd值，不做任何事；
+  2. 回到while循环的开始，调用`talkWithDriver`函数，因为mIn内还有一个数据未读出，既是bwr未做好读的准备，不会进行ioctl，直接返回了NO_ERROR
+  3. 继续读出mIn中的`BR_TRANSACTION_COMPLETE`，进入对应case，因为最开始调用addService时，传给`IPCThreadState::self()->transact`函数reply参数了，即此时不会finish，会继续待在`IPCThreadState::waitForResponse`函数内；
 
 * [RadioService进程空间] 继续执行waitForResponse函数，此时mIn和mOut内都是空的：
 > 1. 设置bwr内read/write的相关数据，write的数据为空，read设置成了mIn可接收数据大小；
-  2. 即调用`ioctl'时，没有任何数据从用户空间传到内核空间；
-  3. 因write_size为0，进到内核时，直接执行到`binder_thread_read`内；
+  1. 即调用`ioctl'时，没有任何数据从用户空间传到内核空间；
+  2. 因write_size为0，进到内核时，直接执行到`binder_thread_read`内；
 
 * [Binder内核空间] 进入内核的`binder_thread_read`函数：
   > 1. 进入binder_thread_read内后，会执行到`wait_event_interruptible`函数，让RadioService进程进入休眠状态，等待ServiceManager的唤醒
@@ -251,17 +251,6 @@ class RadioService :
 * [BinderService类的定义](#BinderService_def)
 
 * [BpServiceManager的addService接口定义](#addService_func_def)
-
-
-
-# Client获取相应的服务流程
-
-
-
-
-
-
-
 
 
 
@@ -959,20 +948,20 @@ struct handle_entry {
 
 
 
-[1]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/
-[2]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/
-[3]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/IPCThreadState.h
-[4]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp
-[5]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Static.cpp#76
-[6]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IServiceManager.cpp
-[7]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/private/binder/Static.h#39
-[8]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/BpBinder.h
-[9]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/BpBinder.cpp
-[10]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/IBinder.h
-[11]:http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Binder.cpp#42
-[12]:http://androidxref.com/6.0.1_r10/xref/frameworks/av/media/mediaserver/main_mediaserver.cpp
-[13]:http://lxr.free-electrons.com/source/drivers/android/binder.c#L1755
-[14]:http://lxr.free-electrons.com/source/drivers/android/binder.c#L1317
-[15]:http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142
-[16]:http://androidxref.com/6.0.1_r10/xref/system/core/include/utils/Thread.h
-[17]:http://androidxref.com/6.0.1_r10/xref/system/core/libutils/Threads.cpp#654
+[1]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/
+[2]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/
+[3]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/IPCThreadState.h
+[4]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp
+[5]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Static.cpp#76
+[6]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IServiceManager.cpp
+[7]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/private/binder/Static.h#39
+[8]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/BpBinder.h
+[9]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/BpBinder.cpp
+[10]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/include/binder/IBinder.h
+[11]: http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Binder.cpp#42
+[12]: http://androidxref.com/6.0.1_r10/xref/frameworks/av/media/mediaserver/main_mediaserver.cpp
+[13]: http://lxr.free-electrons.com/source/drivers/android/binder.c#L1755
+[14]: http://lxr.free-electrons.com/source/drivers/android/binder.c#L1317
+[15]: http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142
+[16]: http://androidxref.com/6.0.1_r10/xref/system/core/include/utils/Thread.h
+[17]: http://androidxref.com/6.0.1_r10/xref/system/core/libutils/Threads.cpp#654
