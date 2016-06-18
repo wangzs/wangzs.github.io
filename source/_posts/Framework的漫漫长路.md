@@ -70,7 +70,7 @@ try {
 > 7. 执行*IApplicationThread*接口的bindApplication函数，实际调用到*ApplicationThreadProxy*的bindApplication，然后通过其内的mRemote调用transact，进行IPC通信（注：实现了*IApplicationThread*接口的ApplicationThread对象thread是由client端传给server端*ActivityManagerService*的binder引用，用于server端控制client端的桥梁）
 > 8. 通过binder驱动，又从ActivityManagerService服务端调回client端，IPC通信经过onTransact对应case为BIND_APPLICATION_TRANSACTION，从而实际调用到client端*ApplicationThread* 的bindApplication
 > 9. bindApplication函数内进行` sendMessage(H.BIND_APPLICATION, data)`的消息发送
-> 10. 发送message后，进入handleMessage函数内BIND_APPLICATION消息的处理，即调用handleBindApplication
+> 10. 发送message后，进入handleMessage函数内BIND_APPLICATION消息的处理，即调用handleBindApplication（ActivityThread的成员函数）
 > 11. handleBindApplication函数内调用*Instrumentation*的callApplicationOnCreate函数完成Application的onCreate的触发。
 
 找到源头，开始从头分析：
@@ -147,6 +147,8 @@ case BIND_APPLICATION:
 ```
 
 E) [handleBindApplication函数][23]中最终调用`createAppContext`创建context。
+
+**由[ActivityManagerService的attachApplication][19]函数反推[一窥APK的main activity的启动过程](#sight_of_main_activity_launch)**
 
 
 
@@ -246,9 +248,221 @@ ActivityGroup被Fragment替代，此处分析[`LAUNCH_ACTIVITY`时执行的handl
 
 **经上面的分析可以知道，ContextImpl的实例对象是经过ActivityThread内的handleMessage后完成初始化的，初始化过后，ContextImpl内`mMainThread`也就指向了该UI主线程（ActivityThread对象）。**
 
+
+
+###  <span id = " sight_of_main_activity_launch">一窥APK的main activity的启动过程</span>
+
+【1】 由[ActivityManagerService的attachApplication][19]函数定义:
+
+```java
+@Override
+public final void attachApplication(IApplicationThread thread) {
+  synchronized (this) {
+    // 获取调用AMS的client的进程pid
+    int callingPid = Binder.getCallingPid();
+    final long origId = Binder.clearCallingIdentity();
+    // 主要由此函数反推（该函数会触发binder通信，
+    //		让应用端调用ApplicationThread的attachApplication）
+    attachApplicationLocked(thread, callingPid);
+    Binder.restoreCallingIdentity(origId);
+  }
+}
+```
+
+【2】[attachApplicationLocked][38]函数部分定义：
+
+```java
+ProcessRecord app;
+// pid为上面函数传入的callingPid MY_PID是AMS所在的pid
+if (pid != MY_PID && pid >= 0) {
+  synchronized (mPidsSelfLocked) {
+    // 根据pid获取一个保存了进程全部信息的ProcessRecord对象
+    app = mPidsSelfLocked.get(pid);
+  }
+} else {
+  app = null;
+}
+```
+
+根据`mPidsSelfLocked.get(pid)`函数获取`ProcessRecord`对象，如果`mPidsSelfLocked`不存在对应pid的`ProcessRecord`对象，则会调用`Process.killProcessQuiet(pid)`结束该pid的进程。从这部分逻辑可以看出，正常情况下，get是可以得到`ProcessRecord`的对象的，则只要找到什么时候向`mPidsSelfLocked`中添加`ProcessRecord`对象，就能一步一步反推到启动main activity的源头。
+
+【3】在`ActivityManagerService`类中搜索*mPidsSelfLocked.put*，发现有两处调用：`setSystemProcess`/`startProcessLocked`，而`setSystemProcess`是系统启动时启动ASM时调用的，可以看出启动新APK时创建的`ProcessRecord`对象最终调用的是[`startProcessLocked`函数][39]，并设置到ASM的`mPidsSelfLocked`成员中。
+
+【4】startProcessLocked函数内进行了新的process的创建，则只需分析startProcessLocked在哪些地方调用，就可慢慢回溯到最开始调用处：
+
+​    【4.1】[ActivityManagerService](http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java)内部的基础定义和调用：
+```java
+// =============================================>>>>> 定义
+// 所在行：3247（6个参数）
+// hostingType:log用的调用类型名(如activity/service)
+// hostingNameStr:一般赋值process的name
+private final void startProcessLocked(ProcessRecord app, String hostingType,
+            String hostingNameStr, String abiOverride, String entryPoint, String[] entryPointArgs) {
+   ...
+   // 最终会触发ActivityThread的main函数，即启动apk的运行进程
+   Process.ProcessStartResult startResult = Process.start(entryPoint,
+                    app.processName, uid, uid, gids, debugFlags, mountExternal,
+                    app.info.targetSdkVersion, app.info.seinfo, requiredAbi, instructionSet,
+                    app.info.dataDir, entryPointArgs);
+}
+
+// 所在行：3241（3个参数） -> 最终调用到（6个参数)版本函数
+private final void startProcessLocked(ProcessRecord app,
+            String hostingType, String hostingNameStr) {
+        startProcessLocked(app, hostingType, hostingNameStr, null /* abiOverride */,
+                null /* entryPoint */, null /* entryPointArgs */);
+}
+
+// 所在行：3116（14个参数） -> 最终调用到（6个参数)版本函数
+final ProcessRecord startProcessLocked(String processName, ApplicationInfo info, boolean knownToBeDead, int intentFlags, String hostingType, ComponentName hostingName, boolean allowWhileBooting, boolean isolated, int isolatedUid, boolean keepIfLarge, String abiOverride, String entryPoint, String[] entryPointArgs, Runnable crashHandler) {
+  ...
+  // 已经有对应processName的ProcessRecord则直接get
+  app = getProcessRecordLocked(processName, info.uid, keepIfLarge);
+  ...
+  // 没有则创建
+  app = newProcessRecordLocked(info, processName, isolated, isolatedUid);
+  // system is ready则启动进程
+  startProcessLocked(app, hostingType, hostingNameStr, abiOverride, entryPoint, entryPointArgs);
+}
+
+// 所在行：3106（9个参数） -> 最终调用到（14个参数)版本函数
+final ProcessRecord startProcessLocked(String processName, ApplicationInfo info, boolean knownToBeDead, int intentFlags, String hostingType, ComponentName hostingName, boolean allowWhileBooting, boolean isolated, boolean keepIfLarge) {
+        return startProcessLocked(processName, info, knownToBeDead, intentFlags, hostingType,
+                hostingName, allowWhileBooting, isolated, 0 /* isolatedUid */, keepIfLarge,
+                null /* ABI override */, null /* entryPoint */, null /* entryPointArgs */,
+                null /* crashHandler */);
+}
+
+
+// =============================================>>>>> 调用
+// 内部调用startProcessLocked（9个参数）的几处函数
+// hostingType: "backup" 
+public boolean bindBackupAgent(ApplicationInfo app, int backupMode) {...}
+// hostingType: "content provider"
+private final ContentProviderHolder getContentProviderImpl(IApplicationThread caller,
+            String name, IBinder token, boolean stable, int userId) {...}
+// WebViewFactory中的LocalServices.getService(ActivityManagerInternal.class)最终调用
+int startIsolatedProcess(String entryPoint, String[] entryPointArgs, String processName, String abiOverride, int uid, Runnable crashHandler) {...}
+
+// 内部调用startProcessLocked（3/6个参数）的几处函数
+// hostingType: "added application" 
+final ProcessRecord addAppLocked(ApplicationInfo info, boolean isolated, String abiOverride) {}
+// hostingType: "on-hold" 
+final void finishBooting() {}
+// hostingType: "link fail" / "bind fail"
+ private final boolean attachApplicationLocked(IApplicationThread thread, int pid) {}
+// hostingType: "restart"
+private final boolean cleanUpApplicationRecordLocked(ProcessRecord app, boolean restarting, boolean allowRestart, int index) {}
+```
+
+​    【4.2】其它三处调用`startProcessLocked`（9个参数）：
+
+```java
+// ActiveServices类
+private final String bringUpServiceLocked(ServiceRecord r, int intentFlags, boolean execInFg, boolean whileRestarting) {
+  // hostingType: "service"
+  mAm.startProcessLocked(procName, r.appInfo, true, 
+                         intentFlags, "service", r.name, 
+                         false, isolated, false)
+}
+
+// BroadcastQueue类
+final void processNextBroadcast(boolean fromMsg) {
+  ...
+  // hostingType: "broadcast"
+  mService.startProcessLocked(targetProcess,
+                    info.activityInfo.applicationInfo, true,
+                    r.intent.getFlags() | Intent.FLAG_FROM_BACKGROUND,
+                    "broadcast", r.curComponent,
+                    (r.intent.getFlags()&Intent.FLAG_RECEIVER_BOOT_UPGRADE) != 0, false, false)
+}
+
+// ActivityStackSupervisor类
+void startSpecificActivityLocked(ActivityRecord r, boolean andResume, boolean checkConfig) {
+  // hostingType: "activity"
+  mService.startProcessLocked(r.processName, r.info.applicationInfo, true, 
+                              0, "activity", r.intent.getComponent(),
+                              false, false, true);
+} 
+```
+
+【5】根据上面的各调用函数中hostingType，推断启动apk的main activity应该是调用了ActivityStackSupervisor的[startSpecificActivityLocked函数][40]， 函数定义：
+
+```java
+void startSpecificActivityLocked(ActivityRecord r,
+                                 boolean andResume, boolean checkConfig) {
+  // Is this activity's application already running?
+  ProcessRecord app = mService.getProcessRecordLocked(r.processName,
+                                                      r.info.applicationInfo.uid, true);
+  r.task.stack.setLaunchTime(r);
+  // 如果已经存在了ProcessRecord信息
+  if (app != null && app.thread != null) {
+    try {
+      if ((r.info.flags&ActivityInfo.FLAG_MULTIPROCESS) == 0
+          || !"android".equals(r.info.packageName)) {
+        // Don't add this if it is a platform component that is marked
+        // to run in multiple processes, because this is actually
+        // part of the framework so doesn't make sense to track as a
+        // separate apk in the process.
+        app.addPackage(r.info.packageName, r.info.applicationInfo.versionCode,
+                       mService.mProcessStats);
+      }
+      realStartActivityLocked(r, app, andResume, checkConfig);
+      return;
+    } catch (RemoteException e) {
+      Slog.w(TAG, "Exception when starting activity "
+             + r.intent.getComponent().flattenToShortString(), e);
+    }
+    // If a dead object exception was thrown -- fall through to
+    // restart the application.
+  }
+  // 第一次启动新apk的main activity，需要创建ProcessRecord对象并启动process
+  mService.startProcessLocked(r.processName, r.info.applicationInfo, true, 0,
+                              "activity", r.intent.getComponent(), false, false, true);
+}
+```
+
+【6】在[ActivityStack][41]类中三处调用startSpecificActivityLocked函数：
+
+```java
+// 函数内调用1次startSpecificActivityLocked
+final void ensureActivitiesVisibleLocked(ActivityRecord starting, int configChanges) {
+  mStackSupervisor.startSpecificActivityLocked(r, noStackActivityResumed, false);
+}
+
+// 函数内调用2次startSpecificActivityLocked
+private boolean resumeTopActivityInnerLocked(ActivityRecord prev, Bundle options) {
+  // Find the first activity that is not finishing.
+  final ActivityRecord next = topRunningActivityLocked(null);
+  if (next.app != null && next.app.thread != null)  {
+    ...
+    catch (Exception e) {
+      // Resume failed, Restarting because process died
+      mStackSupervisor.startSpecificActivityLocked(next, true, false);
+    }
+  } else {
+    // resumeTopActivityLocked: Restarting 
+    mStackSupervisor.startSpecificActivityLocked(next, true, true);
+  }
+}
+```
+
+由resumeTopActivityInnerLocked内的`topRunningActivityLocked`函数可推测获取栈顶的activity在第一次启动时会为null，应该会进入第二个startSpecificActivityLocked的调用，则继续跟踪[resumeTopActivityInnerLocked][42]函数的调用。
+
+【7】resumeTopActivityInnerLocked函数调用处是ActivityStack的[resumeTopActivityLocked][43]函数，继续查找resumeTopActivityLocked的调用，[发现很多地方有调用](http://androidxref.com/6.0.1_r10/s?refs=resumeTopActivityLocked&project=frameworks)，感觉继续逆向查找有些费事。我们知道，打开桌面上的apk，其实也是通过调用`startActivity`函数调起的，所以此处逆向查找遇到难题，则再从源头分析，对接到此处；
+
+【8】**正向推理：**Activity的[startActivity][52] -> Activity的[startActivityForResult][53]  -> Instrumentation的[execStartActivity][54] -> ActivityManagerNative内[ActivityManagerProxy的startActivity][55] -> 触发binder发送类型START_ACTIVITY_TRANSACTION的事务  -> [AMS收到事务请求][56]触发其[startActivity][57]  ->  AMS的[startActivityAsUser][58] -> ActivityStackSupervisor的[startActivityMayWait][59] -> ActivityStackSupervisor的[startActivityLocked][44](doResume参数传了true) ->  ActivityStackSupervisor的[startActivityUncheckedLocked][45] -> ActivityStack的[startActivityLocked][46] ->  因doResume为true调用ActivityStackSupervisor的[resumeTopActivitiesLocked][47] ->  ActivityStack的[resumeTopActivityLocked][48]；到此，终于和【7】中逆向查找得到的ActivityStack[resumeTopActivityLocked][43]函数对上了。
+
+从上面的简单流程推断看出，当启动一个新的apk时，随着一级一级的函数调用，会在ActivityStackSupervisor的[startSpecificActivityLocked函数][40]中调用到AMS的[9个参数的startProcessLocked][61]，并经过[14个参数的startProcessLocked][62]函数（在该函数内如果不存在ProcessRecord会创建一个）转到调用[6个参数的startProcessLocked][60]的函数中，通过`Process.start`函数用zygote启动新的process。
+
+回到开始，为了知道AMS的[attachApplicationLocked][38]函数中获取ProcessRecord对象是什么时候设置的，一路逆向查找，在碰到比较复杂的逆向线索后，再从期望的逆向查找结果开始分析，最终两边的分析可以连上，说明了ProcessRecord的对象在启动新的apk的过程是个很重要的线索。
+
+[详细的启动apk流程分析](http://wangzs.github.io/2016/06/18/Framework之APK启动分析)
+
+
+
+
 ## [Handle][7]简析
-
-
 
 
 
@@ -309,3 +523,29 @@ ActivityGroup被Fragment替代，此处分析[`LAUNCH_ACTIVITY`时执行的handl
 [35]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ActivityThread.java#attach
 [36]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ActivityThread.java#main
 [37]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ActivityThread.java#4681
+[38]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#attachApplicationLocked
+[39]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3247
+[40]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java#startSpecificActivityLocked
+[41]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStack.java
+[42]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStack.java#resumeTopActivityInnerLocked
+[43]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStack.java#resumeTopActivityLocked
+[44]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java#startActivityLocked
+
+[45]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java#startActivityUncheckedLocked
+[46]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStack.java#startActivityLocked
+[47]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java#2727
+[48]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStack.java#1540
+[49]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStack.java#resumeTopActivityInnerLocked
+[50]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java#startSpecificActivityLocked
+[51]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#startProcessLocked
+[52]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/Activity.java#startActivity
+[53]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/Activity.java#startActivityForResult
+[54]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/Instrumentation.java#1481
+[55]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ActivityManagerNative.java#2631
+[56]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ActivityManagerNative.java#146
+[57]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#startActivity
+[58]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#startActivityAsUser
+[59]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityStackSupervisor.java#startActivityMayWait
+[60]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3247
+[61]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3106
+[62]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3116
