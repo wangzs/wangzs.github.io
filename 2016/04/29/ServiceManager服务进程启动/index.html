@@ -1,0 +1,781 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Binder,ServiceManager," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="ServiceManager服务进程的启动主要代码的路径：
+
+/frameworks/native/cmds/servicemanager/binder.h /frameworks/native/cmds/servicemanager/binder.c /frameworks/native/cmds/servicemanager/service_manager.c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ServiceManager服务的启动">
+<meta property="og:url" content="wangzs.github.io/2016/04/29/ServiceManager服务进程启动/index.html">
+<meta property="og:site_name" content="千里之行码于足下">
+<meta property="og:description" content="ServiceManager服务进程的启动主要代码的路径：
+
+/frameworks/native/cmds/servicemanager/binder.h /frameworks/native/cmds/servicemanager/binder.c /frameworks/native/cmds/servicemanager/service_manager.c">
+<meta property="og:updated_time" content="2016-05-07T17:14:48.953Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ServiceManager服务的启动">
+<meta name="twitter:description" content="ServiceManager服务进程的启动主要代码的路径：
+
+/frameworks/native/cmds/servicemanager/binder.h /frameworks/native/cmds/servicemanager/binder.c /frameworks/native/cmds/servicemanager/service_manager.c">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> ServiceManager服务的启动 | 千里之行码于足下 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">千里之行码于足下</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">我是一只小小猿</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-libs">
+          <a href="/Libs" rel="section">
+            
+              <i class="menu-item-icon fa fa-gears fa-fw"></i> <br />
+            
+            Libs
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                ServiceManager服务的启动
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-04-29T09:32:00+08:00" content="2016-04-29">
+              2016-04-29
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="ServiceManager服务进程的启动"><a href="#ServiceManager服务进程的启动" class="headerlink" title="ServiceManager服务进程的启动"></a>ServiceManager服务进程的启动</h1><p>主要代码的路径：</p>
+<blockquote>
+<p><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.h" target="_blank" rel="external">/frameworks/native/cmds/servicemanager/binder.h</a><br> <a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.c" target="_blank" rel="external">/frameworks/native/cmds/servicemanager/binder.c</a><br> <a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/service_manager.c" target="_blank" rel="external">/frameworks/native/cmds/servicemanager/service_manager.c</a></p>
+</blockquote>
+<a id="more"></a>
+<h6 id="service-manager-c代码分析"><a href="#service-manager-c代码分析" class="headerlink" title="service_manager.c代码分析"></a>service_manager.c代码分析</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 将16位的字符截断只要低b位的数据</span></div><div class="line"><span class="function"><span class="keyword">const</span> <span class="keyword">char</span> *<span class="title">str8</span><span class="params">(<span class="keyword">const</span> <span class="keyword">uint16_t</span> *x, <span class="keyword">size_t</span> x_len)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">static</span> <span class="keyword">char</span> buf[<span class="number">128</span>];</div><div class="line">    <span class="keyword">size_t</span> max = <span class="number">127</span>;</div><div class="line">    <span class="keyword">char</span> *p = buf;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (x_len &lt; max) &#123;</div><div class="line">        max = x_len;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (x) &#123;</div><div class="line">        <span class="comment">// 超出16位字符数组长度或配到16位数据的低8位数据为0x00的字符</span></div><div class="line">        <span class="keyword">while</span> ((max &gt; <span class="number">0</span>) &amp;&amp; (*x != <span class="string">'\0'</span>)) &#123;</div><div class="line">            *p++ = *x++;</div><div class="line">            max--;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    *p++ = <span class="number">0</span>;</div><div class="line">    <span class="keyword">return</span> buf;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 16位数组与8位数组的数据是否相等判断 1-相等  0-不等</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">str16eq</span><span class="params">(<span class="keyword">const</span> <span class="keyword">uint16_t</span> *a, <span class="keyword">const</span> <span class="keyword">char</span> *b)</span></span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">while</span> (*a &amp;&amp; *b)</div><div class="line">		<span class="keyword">if</span> (*a++ != *b++) <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">	<span class="keyword">if</span> (*a || *b)</div><div class="line">		<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">	<span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line"><span class="keyword">static</span> <span class="keyword">int</span> selinux_enabled;             <span class="comment">// </span></div><div class="line"><span class="keyword">static</span> <span class="keyword">char</span> *service_manager_context;   <span class="comment">// </span></div><div class="line"><span class="keyword">static</span> <span class="keyword">struct</span> selabel_handle* sehandle; <span class="comment">// </span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">// service_manager服务进程的启动main函数</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> **argv)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">struct</span> binder_state *bs;</div><div class="line">    <span class="comment">// 1.打开binder虚拟设备，会在binder内核中创建一个binder_proc对象，该对象内也保存了service_manager进程信息</span></div><div class="line">    <span class="comment">//    这样service_manager进程相关信息就在binder内核有了一席之地，为后面设置service_manager为context的manager做基础</span></div><div class="line">    <span class="comment">// 2.内核binder的版本与用户层binder版本对比</span></div><div class="line">    <span class="comment">// 3.映射设备的一段内容到本进程的一段内存中（binder_mmap）</span></div><div class="line">    <span class="comment">//      其实就是将binder驱动所在的内核区内存映射到service_manager进程空间中</span></div><div class="line">    bs = binder_open(<span class="number">128</span>*<span class="number">1024</span>);</div><div class="line">    <span class="keyword">if</span> (!bs) &#123;</div><div class="line">        ALOGE(<span class="string">"failed to open binder driver\n"</span>);</div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 通过ioctl向驱动层发送BINDER_SET_CONTEXT_MGR设置service_manager进程为context manager</span></div><div class="line">    <span class="comment">//    主要是在binder内核中通过binder_new_node来创建binder_context_mgr_node对象（内部也有service_manager进程相关信息）</span></div><div class="line">    <span class="keyword">if</span> (binder_become_context_manager(bs)) &#123;</div><div class="line">        ALOGE(<span class="string">"cannot become context manager (%s)\n"</span>, strerror(errno));</div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// selinux权限相关检查验证</span></div><div class="line">    selinux_enabled = is_selinux_enabled();</div><div class="line">    sehandle = selinux_android_service_context_handle();</div><div class="line">    selinux_status_open(<span class="literal">true</span>);</div><div class="line">    <span class="keyword">if</span> (selinux_enabled &gt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">if</span> (sehandle == <span class="literal">NULL</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"SELinux: Failed to acquire sehandle. Aborting.\n"</span>);</div><div class="line">            <span class="built_in">abort</span>();</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 检索当前进程的context，service_manager_context只能由freecon释放</span></div><div class="line">        <span class="keyword">if</span> (getcon(&amp;service_manager_context) != <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"SELinux: Failed to acquire service_manager context. Aborting.\n"</span>);</div><div class="line">            <span class="built_in">abort</span>();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">union</span> selinux_callback cb;</div><div class="line">    cb.func_audit = audit_callback;</div><div class="line">    selinux_set_callback(SELINUX_CB_AUDIT, cb);</div><div class="line">    cb.func_log = selinux_log_callback;</div><div class="line">    selinux_set_callback(SELINUX_CB_LOG, cb);</div><div class="line">    <span class="comment">// service_manager进程进入无限循环（没有事务处理时会进入阻塞休眠状态）</span></div><div class="line">    <span class="comment">// ====&gt; 1.分析无事务时的状况（详见binder_loop无事务逻辑分析）</span></div><div class="line">    <span class="comment">// ====&gt; 2.分析有事务需要处理的状况（详见binder_loop事务处理逻辑分析）</span></div><div class="line">    binder_loop(bs, svcmgr_handler);  <span class="comment">// svcmgr_handler是ServiceManager的server端具体处理客户端调用的函数的实际调用处</span></div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h6 id="代码中相关结构体的定义："><a href="#代码中相关结构体的定义：" class="headerlink" title="代码中相关结构体的定义："></a>代码中相关结构体的定义：</h6><ul>
+<li><a href="#binder_state_def">binder_state</a></li>
+<li><a href="#binder_write_read_def">binder_write_read</a></li>
+</ul>
+<h6 id="代码中相关函数的定义："><a href="#代码中相关函数的定义：" class="headerlink" title="代码中相关函数的定义："></a>代码中相关函数的定义：</h6><ul>
+<li><a href="#binder_open_def">binder_open</a></li>
+<li><a href="#binder_become_context_manager_def">binder_become_context_manager</a></li>
+<li><a href="#selinux_android_service_context_handle_def">selinux_android_service_context_handle</a></li>
+<li><a href="#is_selinux_enabled_def">is_selinux_enabled</a></li>
+<li><a href="#selinux_status_open_def">selinux_status_open</a></li>
+<li><a href="#binder_loop_def">binder_loop</a></li>
+<li><a href="#binder_write_def">binder_write</a></li>
+<li><a href="#binder_loop_def">binder_loop无事务逻辑分析</a></li>
+<li><a href="./ServiceManager进程处理事务请求.md">binder_loop事务处理逻辑分析</a></li>
+</ul>
+<p>【注】：代码中<code>open</code>、<code>ioctl</code>、<code>mmap</code>等系统调用，最后都会调用到binder内核驱动内的代码<code>binder_open</code>、<code>binder_ioctl</code>、<code>binder_mmap</code>相应的函数调用。</p>
+<hr>
+<p><span id="binder_state_def">binder_state结构体定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> binder_state</div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> fd;</div><div class="line">    <span class="keyword">void</span> *mapped;</div><div class="line">    <span class="keyword">size_t</span> mapsize;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p><span id="binder_write_read_def">binder_write_read结构体定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">struct</span> binder_write_read &#123;</div><div class="line"> <span class="keyword">signed</span> <span class="keyword">long</span> write_size;</div><div class="line"> <span class="keyword">signed</span> <span class="keyword">long</span> write_consumed;</div><div class="line"> <span class="keyword">unsigned</span> <span class="keyword">long</span> write_buffer;</div><div class="line"> <span class="keyword">signed</span> <span class="keyword">long</span> read_size;</div><div class="line"> <span class="keyword">signed</span> <span class="keyword">long</span> read_consumed;</div><div class="line"> <span class="keyword">unsigned</span> <span class="keyword">long</span> read_buffer;</div><div class="line">&#125;;</div></pre></td></tr></table></figure></p>
+<p><span id="binder_open_def">binder_open函数定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 传入的mapsize = 128*1024</span></div><div class="line"><span class="function"><span class="keyword">struct</span> binder_state *<span class="title">binder_open</span><span class="params">(<span class="keyword">size_t</span> mapsize)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">struct</span> binder_state *bs;</div><div class="line">    <span class="keyword">struct</span> binder_version vers;   <span class="comment">// 有一个类型 unsigned int的protocol_version成员</span></div><div class="line">    bs = <span class="built_in">malloc</span>(<span class="keyword">sizeof</span>(*bs));</div><div class="line">    <span class="keyword">if</span> (!bs) &#123;</div><div class="line">        errno = ENOMEM;</div><div class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 调用到binder驱动代码中的binder_open函数，该函数会创建一个binder_proc对象(该对象在Binder内核中很重要)</span></div><div class="line">    <span class="comment">// binder_proc对象内保存了当前server_manager进程信息等(binder_proc对象在内核进程中)</span></div><div class="line">    bs-&gt;fd = open(<span class="string">"/dev/binder"</span>, O_RDWR);   <span class="comment">// 未设置O_NONBLOCK模式，后面service_manager在内核中的binder_thread_read就会进行阻塞</span></div><div class="line">    <span class="keyword">if</span> (bs-&gt;fd &lt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"binder: cannot open device (%s)\n"</span>,</div><div class="line">                strerror(errno));</div><div class="line">        <span class="keyword">goto</span> fail_open;</div><div class="line">    &#125;</div><div class="line">     <span class="comment">// 向binder驱动层查询binder的内核驱动版本，并对比与用户空间的binder协议版本是否一致</span></div><div class="line">    <span class="keyword">if</span> ((ioctl(bs-&gt;fd, BINDER_VERSION, &amp;vers) == <span class="number">-1</span>) ||</div><div class="line">        (vers.protocol_version != BINDER_CURRENT_PROTOCOL_VERSION)) &#123;</div><div class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,</div><div class="line">                <span class="string">"binder: kernel driver version (%d) differs from user space version (%d)\n"</span>,</div><div class="line">                vers.protocol_version, BINDER_CURRENT_PROTOCOL_VERSION);</div><div class="line">        <span class="keyword">goto</span> fail_open;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 需要的内存映射大小128*1024</span></div><div class="line">    bs-&gt;mapsize = mapsize;</div><div class="line">    <span class="comment">// 1.addr参数为NULL表示由内核选择映射的地址</span></div><div class="line">    <span class="comment">// 2.length参数表示将要映射文件的offset到offset+length这段内容到进程空间</span></div><div class="line">    <span class="comment">// 3.prot参数描述映射的内存的保护方式:pages可被执行/可读/可写/禁止访问</span></div><div class="line">    <span class="comment">// 4.flags参数是关于其他进程共同映射同一文件时的更新机制：MAP_PRIVATE表示会创建一个私用的写时拷贝映射，</span></div><div class="line">    <span class="comment">//    即此进程对映射内存的修改不会写回到文件，映射该文件的其他进程也看不到此进程的修改</span></div><div class="line">    <span class="comment">// 5.fd参数是文件描述符，代表了映射的文件</span></div><div class="line">    <span class="comment">// 6.offset参数表示文件开始处偏移量，必须是page的整数倍</span></div><div class="line">    <span class="comment">//    内存映射的优点就是：client空间数据拷贝到binder内核后，server因此内存映射，不需要再从binder内核中拷贝数据了</span></div><div class="line">    bs-&gt;mapped = mmap(<span class="literal">NULL</span>, mapsize, PROT_READ, MAP_PRIVATE, bs-&gt;fd, <span class="number">0</span>);</div><div class="line">    <span class="comment">// mmap函数执行结束后，会映射binder虚拟设备(128*1024大小的文件内容)到server_manager进程内</span></div><div class="line">    <span class="keyword">if</span> (bs-&gt;mapped == MAP_FAILED) &#123;</div><div class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"binder: cannot map device (%s)\n"</span>,</div><div class="line">                strerror(errno));</div><div class="line">        <span class="keyword">goto</span> fail_map;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// binder_state对象内的内容是：binder虚拟设备的文件描述符</span></div><div class="line">    <span class="comment">//            进程内映射binder设备的内存起始地址</span></div><div class="line">    <span class="comment">//            映射的内存大小</span></div><div class="line">    <span class="keyword">return</span> bs;</div><div class="line"></div><div class="line">fail_map:</div><div class="line">    close(bs-&gt;fd);</div><div class="line">fail_open:</div><div class="line">    <span class="built_in">free</span>(bs);</div><div class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li><a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2942" target="_blank" rel="external">binder内核中binder_open函数具体定义</a></li>
+</ul>
+<p><span id="binder_become_context_manager_def">binder_become_context_manager函数定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_become_context_manager</span><span class="params">(<span class="keyword">struct</span> binder_state *bs)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 向binder内核驱动层进行类型为BINDER_SET_CONTEXT_MGR的通信，设置当前的server_manager进程为context manager</span></div><div class="line">    <span class="comment">//    最终调用到binder驱动层的binder_ioctl_set_ctx_mgr函数；在binder_ioctl_set_ctx_mgr函数内会通过binder_new_node函数</span></div><div class="line">    <span class="comment">//    创建一个内核中全局的binder_context_mgr_node对象，binder_new_node函数调用时会将最开始open时在binder内核中产生的</span></div><div class="line">    <span class="comment">//    binder_proc对象（内部有service_manager进程相关信息）作为参数最后设置到binder_context_mgr_node对象内</span></div><div class="line">    <span class="comment">//    全局的binder_context_mgr_node的对象在client和ServiceManager之间通讯时起重要作用(该对象就是ServiceManager在内核中的Binder实体)</span></div><div class="line">    <span class="keyword">return</span> ioctl(bs-&gt;fd, BINDER_SET_CONTEXT_MGR, <span class="number">0</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>很多博客中的Binder实体，其实就是server进程相关信息绑定到了binder内核产生的一个struct binder_node对象。</p>
+<p><span id="binder_loop_def">binder_loop函数定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">binder_loop</span><span class="params">(<span class="keyword">struct</span> binder_state *bs, binder_handler func)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> res;</div><div class="line">    <span class="keyword">struct</span> binder_write_read bwr;</div><div class="line">    <span class="keyword">uint32_t</span> readbuf[<span class="number">32</span>];</div><div class="line"></div><div class="line">    bwr.write_size = <span class="number">0</span>;</div><div class="line">    bwr.write_consumed = <span class="number">0</span>;</div><div class="line">    bwr.write_buffer = <span class="number">0</span>;</div><div class="line">    <span class="comment">// binder_write函数执行完BC_ENTER_LOOPER命令后，会对内核中的binder_thread类型的looper成员进行或运算</span></div><div class="line">    <span class="comment">//    thread-&gt;looper |= BINDER_LOOPER_STATE_ENTERED， 即调用完后就设置了thread-&gt;looper的状态</span></div><div class="line">    readbuf[<span class="number">0</span>] = BC_ENTER_LOOPER;                   <span class="comment">// ====&gt; 详见见下面binder驱动中BC_ENTER_LOOPER内的处理逻辑</span></div><div class="line">    binder_write(bs, readbuf, <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>));    <span class="comment">// ====&gt; 看binder_write函数定义（因read_size=0只会执行binder_thread_write）</span></div><div class="line">    <span class="comment">// service_manager进入无限循环</span></div><div class="line">    <span class="keyword">for</span> (;;) &#123;</div><div class="line">        bwr.read_size = <span class="keyword">sizeof</span>(readbuf);  <span class="comment">// 大小32</span></div><div class="line">        bwr.read_consumed = <span class="number">0</span>;</div><div class="line">        bwr.read_buffer = (<span class="keyword">uintptr_t</span>) readbuf;</div><div class="line">        <span class="comment">// 因write_size=0，故只会执行binder内核中的binder_thread_read函数</span></div><div class="line">        <span class="comment">//  无事务时会阻塞进入休眠状态</span></div><div class="line">        res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);   <span class="comment">// ====&gt; 此处的主要操作逻辑参见下面的binder_thread_read函数分析</span></div><div class="line"></div><div class="line">        <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"binder_loop: ioctl failed (%s)\n"</span>, strerror(errno));</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        res = binder_parse(bs, <span class="number">0</span>, (<span class="keyword">uintptr_t</span>) readbuf, bwr.read_consumed, func);</div><div class="line">        <span class="keyword">if</span> (res == <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"binder_loop: unexpected reply?!\n"</span>);</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"binder_loop: io error %d %s\n"</span>, res, strerror(errno));</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<ul>
+<li><a href="#BC_ENTER_LOOPER_def">BC_ENTER_LOOPER命令类型实际内核中的处理</a></li>
+<li><a href="#binder_write_def">binder_write</a></li>
+<li><a href="#binder_thread_read_def">binder_thread_read函数分析</a></li>
+</ul>
+<p><span id="binder_write_def"><code>binder_write</code>函数方法定义如下</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_write</span><span class="params">(<span class="keyword">struct</span> binder_state *bs, <span class="keyword">void</span> *data, <span class="keyword">size_t</span> len)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// write表示service_manager进程需要写入到binder内核</span></div><div class="line">    <span class="comment">// read表示service_manager进程需要从binder内核读出</span></div><div class="line">    <span class="keyword">struct</span> binder_write_read bwr;</div><div class="line">    <span class="keyword">int</span> res;</div><div class="line">    bwr.write_size = len;     <span class="comment">// 传递的数据的长度</span></div><div class="line">    bwr.write_consumed = <span class="number">0</span>;</div><div class="line">    bwr.write_buffer = (<span class="keyword">uintptr_t</span>) data; <span class="comment">// 需要向binder内核传送的数据内容</span></div><div class="line">    bwr.read_size = <span class="number">0</span>;</div><div class="line">    bwr.read_consumed = <span class="number">0</span>;</div><div class="line">    bwr.read_buffer = <span class="number">0</span>;</div><div class="line">    <span class="comment">// 会调用到binder内核中binder_ioctl</span></div><div class="line">    <span class="comment">//  进而调用binder_ioctl_write_read(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr, thread)进入内核操作</span></div><div class="line">    <span class="comment">//  因为bwr.read_consumed为0，即不会进入binder内核中binder_thread_read函数进行操作，write后就返回了</span></div><div class="line">    res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);</div><div class="line">    <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</div><div class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"binder_write: ioctl failed (%s)\n"</span>,</div><div class="line">                strerror(errno));</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> res;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<hr>
+<p><span id="BC_ENTER_LOOPER_def">BC_ENTER_LOOPER命令类型对应到内核空间的处理逻辑</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// binder内核中binder_thread_write函数的部分处理逻辑</span></div><div class="line"><span class="keyword">case</span> BC_ENTER_LOOPER:</div><div class="line">  binder_debug(BINDER_DEBUG_THREADS,</div><div class="line">  	     <span class="string">"%d:%d BC_ENTER_LOOPER\n"</span>,</div><div class="line">  	     proc-&gt;pid, thread-&gt;pid);</div><div class="line">  <span class="comment">// thread-&gt;looper在创建后只和BINDER_LOOPER_STATE_NEED_RETURN进行了或运算</span></div><div class="line">  <span class="keyword">if</span> (thread-&gt;looper &amp; BINDER_LOOPER_STATE_REGISTERED) &#123;</div><div class="line">  	thread-&gt;looper |= BINDER_LOOPER_STATE_INVALID;</div><div class="line">  	binder_user_error(<span class="string">"%d:%d ERROR: BC_ENTER_LOOPER called after BC_REGISTER_LOOPER\n"</span>,</div><div class="line">  		proc-&gt;pid, thread-&gt;pid);</div><div class="line">  &#125;</div><div class="line">  thread-&gt;looper |= BINDER_LOOPER_STATE_ENTERED;</div><div class="line">  <span class="keyword">break</span>;</div></pre></td></tr></table></figure></p>
+<p><span id="binder_thread_read_def">sercice_manager触发的binder_thread_read函数分析</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">binder_thread_read</span><span class="params">(<span class="keyword">struct</span> binder_proc *proc,</span></span></div><div class="line">                  <span class="keyword">struct</span> binder_thread *thread,</div><div class="line">                  <span class="keyword">binder_uintptr_t</span> binder_buffer, <span class="keyword">size_t</span> size,</div><div class="line">                  <span class="keyword">binder_size_t</span> *consumed, <span class="keyword">int</span> non_block)</div><div class="line">&#123;</div><div class="line">    <span class="keyword">void</span> __user *buffer = (<span class="keyword">void</span> __user *)(<span class="keyword">uintptr_t</span>)binder_buffer;</div><div class="line">    <span class="keyword">void</span> __user *ptr = buffer + *consumed;</div><div class="line">    <span class="keyword">void</span> __user *end = buffer + size;</div><div class="line">    <span class="keyword">int</span> ret = <span class="number">0</span>;</div><div class="line">    <span class="keyword">int</span> wait_for_proc_work;</div><div class="line">    <span class="keyword">if</span> (*consumed == <span class="number">0</span>) &#123;</div><div class="line">        <span class="keyword">if</span> (put_user(BR_NOOP, (<span class="keyword">uint32_t</span> __user *)ptr))</div><div class="line">            <span class="keyword">return</span> -EFAULT;</div><div class="line">        ptr += <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>);</div><div class="line">    &#125;</div><div class="line">retry:</div><div class="line">    <span class="comment">// service_manager开始时transaction_stack为null以及todo也是空</span></div><div class="line">    <span class="comment">// wait_for_proc_work为1，即正处于等待service_manager进程工作中</span></div><div class="line">    wait_for_proc_work = thread-&gt;transaction_stack == <span class="literal">NULL</span> &amp;&amp;</div><div class="line">                list_empty(&amp;thread-&gt;todo);</div><div class="line">    <span class="comment">// 出错后的处理，此时service_manager未做任何事，无error</span></div><div class="line">    <span class="keyword">if</span> (thread-&gt;return_error != BR_OK &amp;&amp; ptr &lt; end) &#123;</div><div class="line">        <span class="keyword">if</span> (thread-&gt;return_error2 != BR_OK) &#123;</div><div class="line">            <span class="keyword">if</span> (put_user(thread-&gt;return_error2, (<span class="keyword">uint32_t</span> __user *)ptr))</div><div class="line">                <span class="keyword">return</span> -EFAULT;</div><div class="line">            ptr += <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>);</div><div class="line">            binder_stat_br(proc, thread, thread-&gt;return_error2);</div><div class="line">            <span class="keyword">if</span> (ptr == end)</div><div class="line">                <span class="keyword">goto</span> done;</div><div class="line">            thread-&gt;return_error2 = BR_OK;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (put_user(thread-&gt;return_error, (<span class="keyword">uint32_t</span> __user *)ptr))</div><div class="line">            <span class="keyword">return</span> -EFAULT;</div><div class="line">        ptr += <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>);</div><div class="line">        binder_stat_br(proc, thread, thread-&gt;return_error);</div><div class="line">        thread-&gt;return_error = BR_OK;</div><div class="line">        <span class="keyword">goto</span> done;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 设置thread-&gt;looper状态为等待中</span></div><div class="line">    thread-&gt;looper |= BINDER_LOOPER_STATE_WAITING;</div><div class="line">    <span class="keyword">if</span> (wait_for_proc_work)</div><div class="line">        proc-&gt;ready_threads++;  <span class="comment">// service_manager进程内准备好工作的进程又多了一个了</span></div><div class="line">    binder_unlock(__func__);</div><div class="line">    trace_binder_wait_for_work(wait_for_proc_work,</div><div class="line">                   !!thread-&gt;transaction_stack,</div><div class="line">                   !list_empty(&amp;thread-&gt;todo));</div><div class="line">    <span class="keyword">if</span> (wait_for_proc_work) &#123;   <span class="comment">// wait_for_proc_work为1，进入if条件句内</span></div><div class="line">        <span class="comment">// 在调用BC_REGISTER_LOOPER或者BC_ENTER_LOOPER前service_manager就进行工作是错的</span></div><div class="line">        <span class="keyword">if</span> (!(thread-&gt;looper &amp; (BINDER_LOOPER_STATE_REGISTERED |</div><div class="line">                    BINDER_LOOPER_STATE_ENTERED))) &#123;</div><div class="line">            binder_user_error(<span class="string">"%d:%d ERROR: Thread waiting for process work before calling BC_REGISTER_LOOPER or BC_ENTER_LOOPER (state %x)\n"</span>,</div><div class="line">                proc-&gt;pid, thread-&gt;pid, thread-&gt;looper);</div><div class="line">            wait_event_interruptible(binder_user_error_wait,</div><div class="line">                         binder_stop_on_user_error &lt; <span class="number">2</span>);</div><div class="line">        &#125;</div><div class="line">        <span class="comment">// 将service_manager进程的优先级别设置为当前线程的优先级别</span></div><div class="line">        binder_set_nice(proc-&gt;default_priority);</div><div class="line">        <span class="keyword">if</span> (non_block) &#123;    <span class="comment">// 如果是非阻塞模式(service_manager打开/dev/binder时没有设置非阻塞模式)</span></div><div class="line">            <span class="keyword">if</span> (!binder_has_proc_work(proc, thread))    <span class="comment">// 当前无事务处理，即ret被设置成-EAGAIN</span></div><div class="line">                ret = -EAGAIN;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="comment">// 如果是阻塞模式，则此线程进入睡眠，等待新事务出现唤醒</span></div><div class="line">            <span class="comment">//    （service_manager在open时未设置非阻塞模式，故会线程会进入休眠）</span></div><div class="line">            ret = wait_event_freezable_exclusive(proc-&gt;wait, binder_has_proc_work(proc, thread));</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> (non_block) &#123;</div><div class="line">            <span class="keyword">if</span> (!binder_has_thread_work(thread))</div><div class="line">                ret = -EAGAIN;  <span class="comment">//  #define EAGAIN  35   /* Try again */</span></div><div class="line">        &#125; <span class="keyword">else</span></div><div class="line">            ret = wait_event_freezable(thread-&gt;wait, binder_has_thread_work(thread));</div><div class="line">    &#125;</div><div class="line">    binder_lock(__func__);</div><div class="line">    <span class="keyword">if</span> (wait_for_proc_work)  &#123;</div><div class="line">        <span class="comment">// 等待的线程都已经算是等待结束（非阻塞直接返回了，阻塞模式下线程到这也是被唤醒了）</span></div><div class="line">        proc-&gt;ready_threads--;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 去掉thread-&gt;looper的BINDER_LOOPER_STATE_WAITING的状态</span></div><div class="line">    thread-&gt;looper &amp;= ~BINDER_LOOPER_STATE_WAITING;</div><div class="line">    <span class="keyword">if</span> (ret)</div><div class="line">        <span class="keyword">return</span> ret;</div><div class="line">    <span class="comment">// 事务的处理逻辑</span></div><div class="line">    。。。</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><span id="is_selinux_enabled_def">is_selinux_enabled函数定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 位置：/external/selinux/libselinux/src/enabled.c</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">is_selinux_enabled</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line">&#123;</div><div class="line">	<span class="comment">/* init_selinuxmnt() gets called before this function. We</span></div><div class="line"> 	 * will assume that if a selinux file system is mounted, then</div><div class="line"> 	 * selinux is enabled. */</div><div class="line">	<span class="keyword">return</span> (selinux_mnt ? <span class="number">1</span> : <span class="number">0</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><span id="selinux_android_service_context_handle_def">selinux_android_service_context_handle函数定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 位置：/external/libselinux/src/android.c</span></div><div class="line"><span class="function"><span class="keyword">struct</span> selabel_handle* <span class="title">selinux_android_service_context_handle</span><span class="params">(<span class="keyword">void</span>)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">struct</span> selabel_handle* sehandle;</div><div class="line"></div><div class="line">    set_policy_index();</div><div class="line">    sehandle = selabel_open(SELABEL_CTX_ANDROID_PROP,</div><div class="line">            &amp;seopts_service[policy_index], <span class="number">1</span>);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (!sehandle) &#123;</div><div class="line">        selinux_log(SELINUX_ERROR, <span class="string">"%s: Error getting service context handle (%s)\n"</span>,</div><div class="line">                __FUNCTION__, strerror(errno));</div><div class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">    &#125;</div><div class="line">    selinux_log(SELINUX_INFO, <span class="string">"SELinux: Loaded service_contexts from %s.\n"</span>,</div><div class="line">            seopts_service[policy_index].value);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> sehandle;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><span id="selinux_status_open_def">selinux_status_open函数定义</span>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 位置:/external/selinux/libselinux/src/sestatus.c</span></div><div class="line"><span class="comment">/*</span></div><div class="line"> * selinux_status_open</div><div class="line"> *</div><div class="line"> * It tries to open and mmap kernel status page (/selinux/status).</div><div class="line"> * Since Linux 2.6.37 or later supports this feature, we may run</div><div class="line"> * fallback routine using a netlink socket on older kernels, if</div><div class="line"> * the supplied `fallback' is not zero.</div><div class="line"> * It returns 0 on success, or -1 on error.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">selinux_status_open</span><span class="params">(<span class="keyword">int</span> fallback)</span></span></div><div class="line">&#123;</div><div class="line">	<span class="keyword">int</span>	fd;</div><div class="line">	<span class="keyword">char</span>	path[PATH_MAX];</div><div class="line">	<span class="keyword">long</span>	pagesize;</div><div class="line"></div><div class="line">	<span class="keyword">if</span> (!selinux_mnt) &#123;</div><div class="line">		errno = ENOENT;</div><div class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">	&#125;</div><div class="line"></div><div class="line">	pagesize = sysconf(_SC_PAGESIZE);</div><div class="line">	<span class="keyword">if</span> (pagesize &lt; <span class="number">0</span>)</div><div class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line"></div><div class="line">	<span class="built_in">snprintf</span>(path, <span class="keyword">sizeof</span>(path), <span class="string">"%s/status"</span>, selinux_mnt);</div><div class="line">	fd = open(path, O_RDONLY | O_CLOEXEC);</div><div class="line">	<span class="keyword">if</span> (fd &lt; <span class="number">0</span>)</div><div class="line">		<span class="keyword">goto</span> error;</div><div class="line"></div><div class="line">	selinux_status = mmap(<span class="literal">NULL</span>, pagesize, PROT_READ, MAP_SHARED, fd, <span class="number">0</span>);</div><div class="line">	<span class="keyword">if</span> (selinux_status == MAP_FAILED) &#123;</div><div class="line">		close(fd);</div><div class="line">		<span class="keyword">goto</span> error;</div><div class="line">	&#125;</div><div class="line">	selinux_status_fd = fd;</div><div class="line">	last_seqno = (<span class="keyword">uint32_t</span>)(<span class="number">-1</span>);</div><div class="line"></div><div class="line">	<span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">error:</div><div class="line">	<span class="comment">/*</span></div><div class="line">	 * If caller wants fallback routine, we try to provide</div><div class="line">	 * an equivalent functionality using existing netlink</div><div class="line">	 * socket, although it needs system call invocation to</div><div class="line">	 * receive event notification.</div><div class="line">	 */</div><div class="line">	<span class="keyword">if</span> (fallback &amp;&amp; avc_netlink_open(<span class="number">0</span>) == <span class="number">0</span>) &#123;</div><div class="line">		<span class="keyword">union</span> selinux_callback	cb;</div><div class="line"></div><div class="line">		<span class="comment">/* register my callbacks */</span></div><div class="line">		cb.func_setenforce = fallback_cb_setenforce;</div><div class="line">		selinux_set_callback(SELINUX_CB_SETENFORCE, cb);</div><div class="line">		cb.func_policyload = fallback_cb_policyload;</div><div class="line">		selinux_set_callback(SELINUX_CB_POLICYLOAD, cb);</div><div class="line"></div><div class="line">		<span class="comment">/* mark as fallback mode */</span></div><div class="line">		selinux_status = MAP_FAILED;</div><div class="line">		selinux_status_fd = avc_netlink_acquire_fd();</div><div class="line">		last_seqno = (<span class="keyword">uint32_t</span>)(<span class="number">-1</span>);</div><div class="line"></div><div class="line">		fallback_sequence = <span class="number">0</span>;</div><div class="line">		fallback_enforcing = security_getenforce();</div><div class="line">		fallback_policyload = <span class="number">0</span>;</div><div class="line"></div><div class="line">		<span class="keyword">return</span> <span class="number">1</span>;</div><div class="line">	&#125;</div><div class="line">	selinux_status = <span class="literal">NULL</span>;</div><div class="line"></div><div class="line">	<span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>一些系统函数的基本定义：<br><a href="http://man7.org/linux/man-pages/man2/mmap.2.html" target="_blank" rel="external">mmap</a>:内存映射文件的方法，可以将文件映射到调用进程的地址空间。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Binder/" rel="tag">#Binder</a>
+          
+            <a href="/tags/ServiceManager/" rel="tag">#ServiceManager</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/03/09/JNI的使用/" rel="next" title="JNI使用方法">
+                <i class="fa fa-chevron-left"></i> JNI使用方法
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/05/01/ServiceManager进程处理事务请求/" rel="prev" title="ServiceManager事务处理逻辑分析">
+                ServiceManager事务处理逻辑分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="wangzs" />
+          <p class="site-author-name" itemprop="name">wangzs</p>
+          <p class="site-description motion-element" itemprop="description">wangzs</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/wangzs" target="_blank">
+                  
+                    <i class="fa fa-github"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/volix" target="_blank">
+                  
+                    <i class="fa fa-weibo"></i> weibo
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ServiceManager服务进程的启动"><span class="nav-number">1.</span> <span class="nav-text">ServiceManager服务进程的启动</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#service-manager-c代码分析"><span class="nav-number">1.0.0.0.0.1.</span> <span class="nav-text">service_manager.c代码分析</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#代码中相关结构体的定义："><span class="nav-number">1.0.0.0.0.2.</span> <span class="nav-text">代码中相关结构体的定义：</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#代码中相关函数的定义："><span class="nav-number">1.0.0.0.0.3.</span> <span class="nav-text">代码中相关函数的定义：</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzs</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+
+  
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/MathJax.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/config/TeX-AMS-MML_HTMLorMML.js"></script>
+  
+
+
+  
+
+
+</body>
+</html>

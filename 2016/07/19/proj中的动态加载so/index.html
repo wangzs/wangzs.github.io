@@ -1,0 +1,758 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,项目Log," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="简介在xx项目中，因为用到了一个直播库（主要使用它的语音功能）。整个库有多个so，将所有so直接放到项目中，会使得APK包直接大了6~7M，比以前的apk包大了差不多一倍，所以就有了需要将语音功能以插件形式提供给用户，让想使用语音功能的用户去下载这些so，这样apk本身就不会增长太大。
+思路
+因为有多个so文件，所以要将这些so打包成zip文件并传到CDN；
+客户端下载打包了的zip文件（校验MD">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动态加载so">
+<meta property="og:url" content="wangzs.github.io/2016/07/19/proj中的动态加载so/index.html">
+<meta property="og:site_name" content="千里之行码于足下">
+<meta property="og:description" content="简介在xx项目中，因为用到了一个直播库（主要使用它的语音功能）。整个库有多个so，将所有so直接放到项目中，会使得APK包直接大了6~7M，比以前的apk包大了差不多一倍，所以就有了需要将语音功能以插件形式提供给用户，让想使用语音功能的用户去下载这些so，这样apk本身就不会增长太大。
+思路
+因为有多个so文件，所以要将这些so打包成zip文件并传到CDN；
+客户端下载打包了的zip文件（校验MD">
+<meta property="og:updated_time" content="2017-02-05T17:10:25.933Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="动态加载so">
+<meta name="twitter:description" content="简介在xx项目中，因为用到了一个直播库（主要使用它的语音功能）。整个库有多个so，将所有so直接放到项目中，会使得APK包直接大了6~7M，比以前的apk包大了差不多一倍，所以就有了需要将语音功能以插件形式提供给用户，让想使用语音功能的用户去下载这些so，这样apk本身就不会增长太大。
+思路
+因为有多个so文件，所以要将这些so打包成zip文件并传到CDN；
+客户端下载打包了的zip文件（校验MD">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> 动态加载so | 千里之行码于足下 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">千里之行码于足下</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">我是一只小小猿</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-libs">
+          <a href="/Libs" rel="section">
+            
+              <i class="menu-item-icon fa fa-gears fa-fw"></i> <br />
+            
+            Libs
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                动态加载so
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-19T00:01:00+08:00" content="2016-07-19">
+              2016-07-19
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h1><p>在xx项目中，因为用到了一个直播库（主要使用它的语音功能）。整个库有多个so，将所有so直接放到项目中，会使得APK包直接大了6~7M，比以前的apk包大了差不多一倍，所以就有了需要将语音功能以插件形式提供给用户，让想使用语音功能的用户去下载这些so，这样apk本身就不会增长太大。</p>
+<h1 id="思路"><a href="#思路" class="headerlink" title="思路"></a>思路</h1><ol>
+<li>因为有多个so文件，所以要将这些so打包成zip文件并传到CDN；</li>
+<li>客户端下载打包了的zip文件（校验MD5）；</li>
+<li>解压zip文件；</li>
+<li>拷贝所有的so文件到<code>/data/data/project_directory/app_lib</code>中；</li>
+<li>加载so，初始化库，使用库功能<a id="more"></a>
+</li>
+</ol>
+<h1 id="具体步骤"><a href="#具体步骤" class="headerlink" title="具体步骤"></a>具体步骤</h1><h2 id="打包so文件"><a href="#打包so文件" class="headerlink" title="打包so文件"></a>打包so文件</h2><p>使用7zip工具，将6个so文件打包压缩，并上传到公司的CDN上；计算打包后文件的MD5值，用于代码中对下载的zip包的校验。</p>
+<h2 id="客户端的下载、校验和解压"><a href="#客户端的下载、校验和解压" class="headerlink" title="客户端的下载、校验和解压"></a>客户端的下载、校验和解压</h2><h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>可以写http下载，也可以用第三方开源库，此处用的是<a href="https://github.com/lingochamp/FileDownloader" target="_blank" rel="external">FileDownloader</a></p>
+<h3 id="MD5校验"><a href="#MD5校验" class="headerlink" title="MD5校验"></a>MD5校验</h3><p>因为手机的内存资源有限，而zip包文件也比较大，所以计算MD5是不断读入数据流，更新<code>MessageDigest</code>对象，最终算出zip包的MD5值：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="function">String <span class="title">getMd5</span><span class="params">(File zipSoFile)</span> </span>&#123;</div><div class="line">  <span class="comment">// 计算zip文件md5的值</span></div><div class="line">  String md5Str = <span class="keyword">null</span>;</div><div class="line">  <span class="keyword">try</span> &#123;</div><div class="line">    FileInputStream fileInputStream = <span class="keyword">new</span> FileInputStream(zipSoFile);</div><div class="line">    MessageDigest messageDigest = MessageDigest.getInstance(<span class="string">"MD5"</span>);</div><div class="line">    <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">8192</span>];	<span class="comment">// 每次读1kB数据</span></div><div class="line">    <span class="keyword">int</span> readNumber;</div><div class="line">    <span class="keyword">while</span> ((readNumber = fileInputStream.read(buffer)) &gt; <span class="number">0</span>) &#123;</div><div class="line">      messageDigest.update(buffer, <span class="number">0</span>, readNumber);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">byte</span>[] digestValue = messageDigest.digest();</div><div class="line">    md5Str = String.format(<span class="string">"%032x"</span>, <span class="keyword">new</span> BigInteger(<span class="number">1</span>, digestValue)); </div><div class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">    e.printStackTrace();</div><div class="line">  &#125;</div><div class="line">  <span class="keyword">return</span> md5Str;</div><div class="line">&#125;</div><div class="line"><span class="comment">// 对比存储的originMd5与md5Str做对比</span></div><div class="line">StringUtils.equalsIgnoreCase(md5Str, originMd5);</div></pre></td></tr></table></figure></p>
+<h3 id="zip文件解压"><a href="#zip文件解压" class="headerlink" title="zip文件解压"></a>zip文件解压</h3><p>使用java本身提供的zip工具类即可，也可以使用apache提供的zip工具类。</p>
+<h2 id="拷贝so"><a href="#拷贝so" class="headerlink" title="拷贝so"></a>拷贝so</h2><p>利用Application对象的<code>getDir(&#39;lib&#39;, Context.MODE_PRIVATE)</code>函数无法获取到<code>/data/data/lib</code>，实际获取到的是<code>/data/data/app_lib</code>，该目录不存在时，自动创建，所以最后拷贝so文件到了<code>/data/data/app_lib</code>目录下。</p>
+<h2 id="加载so"><a href="#加载so" class="headerlink" title="加载so"></a>加载so</h2><p>so的加载直接调用函数<code>System.load(soAbsolutePath)</code>函数，因为<code>System.loadLibrary(&quot;myso&quot;)</code>函数会从系统lib路径中查找名为<code>libmyso.so</code>的文件，所以此处加载so是调用<code>System.load</code>函数，直接传入so的绝对路径，进行加载。</p>
+<h1 id="部分实现代码"><a href="#部分实现代码" class="headerlink" title="部分实现代码"></a>部分实现代码</h1><ul>
+<li>管理so压缩文件下载、校验、解压缩和自动加载so<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div><div class="line">121</div><div class="line">122</div><div class="line">123</div><div class="line">124</div><div class="line">125</div><div class="line">126</div><div class="line">127</div><div class="line">128</div><div class="line">129</div><div class="line">130</div><div class="line">131</div><div class="line">132</div><div class="line">133</div><div class="line">134</div><div class="line">135</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XxSoLoaderManager</span> </span>&#123;</div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> XxSoLoaderManager ourInstance = <span class="keyword">new</span> XxSoLoaderManager();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> XxSoLoaderManager <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> ourInstance;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="title">XxSoLoaderManager</span><span class="params">()</span> </span>&#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 0-未查询 或 查询结果不完整 或 查询出错</div><div class="line">     * 1-app_lib目录中有所有的so</div><div class="line">     * 2-当前已经加载了so</div><div class="line">     */</div><div class="line">    <span class="keyword">private</span> <span class="keyword">int</span> mSoStatus = <span class="number">0</span>;</div><div class="line">    <span class="keyword">private</span> String mSoLibName = <span class="string">"lib"</span>;</div><div class="line">    <span class="keyword">private</span> String mZipFileMd5 = <span class="string">"md5计算工具得到的zip文件的md5"</span>;</div><div class="line">    <span class="keyword">private</span> String mZipFileName = <span class="string">"xx_zip_so.file"</span>;</div><div class="line">    <span class="keyword">private</span> String mDownloadUrl = <span class="string">"http://xxx_zip_file.download.url.path"</span>;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> String[] mNeedLoadSo = &#123;</div><div class="line">            <span class="string">"libxxx0.so"</span>,</div><div class="line">            <span class="string">"libxxx1.so"</span>,</div><div class="line">            <span class="string">"libxxx2.so"</span>,</div><div class="line">            <span class="string">"libxxx3.so"</span>,</div><div class="line">            <span class="string">"libxxx4.so"</span>,</div><div class="line">            <span class="string">"libxxx5.so"</span></div><div class="line">    &#125;;</div><div class="line">	<span class="comment">// 初始化，如果已经下载了zip包或者so已在app_lib中，动态加载这些so</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (mSoStatus == <span class="number">0</span>) &#123;</div><div class="line">            Observable.create(<span class="keyword">new</span> Observable.OnSubscribe&lt;Boolean&gt;() &#123;</div><div class="line">                <span class="meta">@Override</span></div><div class="line">                <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">call</span><span class="params">(Subscriber&lt;? <span class="keyword">super</span> Boolean&gt; subscriber)</span> </span>&#123;</div><div class="line">                    <span class="keyword">if</span> (existSoInLib() || unzipSoToLibs()) &#123;</div><div class="line">                        subscriber.onNext(<span class="keyword">true</span>);</div><div class="line">                    &#125; <span class="keyword">else</span> &#123;</div><div class="line">                        subscriber.onNext(<span class="keyword">false</span>);</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;).subscribeOn(Schedulers.io())</div><div class="line">              .observeOn(AndroidSchedulers.mainThread())</div><div class="line">              .subscribe(needLoad -&gt; &#123;</div><div class="line">                <span class="keyword">if</span> (needLoad) &#123;</div><div class="line">                  loadSo();</div><div class="line">                &#125;</div><div class="line">              &#125;, Throwable::printStackTrace);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 是否已经加载so到内存</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isLoadedSo</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> mSoStatus == <span class="number">2</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 动态加载so</span></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">loadSo</span><span class="params">()</span> </span>&#123;</div><div class="line">    	<span class="comment">// App.get()得到的Application对象</span></div><div class="line">        File libFile = App.get().getDir(mSoLibName, Context.MODE_PRIVATE);</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="keyword">for</span> (String soName : mNeedLoadSo) &#123;</div><div class="line">                String soAbsolutePath = <span class="keyword">new</span> File(libFile, soName).getAbsolutePath();</div><div class="line">                System.load(soAbsolutePath);</div><div class="line">            &#125;</div><div class="line">            mSoStatus = <span class="number">2</span>;</div><div class="line">        &#125; <span class="keyword">catch</span> (UnsatisfiedLinkError e) &#123;</div><div class="line">            <span class="comment">// 无法加载so，禁用语音</span></div><div class="line">            forbidUseVoice();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 判断/data/data/xx.yy.zz/app_lib中是否已经存在所有需要下载的so文件</span></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">existSoInLib</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">if</span> (mSoStatus == <span class="number">0</span>) &#123;</div><div class="line">            File libFile = App.get().getDir(mSoLibName, Context.MODE_PRIVATE);</div><div class="line">            <span class="keyword">final</span> String[] allSo = libFile.list();</div><div class="line">            <span class="keyword">int</span> loadSoNum = mNeedLoadSo.length;</div><div class="line">            <span class="keyword">if</span> (allSo == <span class="keyword">null</span> || allSo.length &lt; loadSoNum) &#123;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">for</span> (String oneSo : allSo) &#123;</div><div class="line">                <span class="keyword">for</span> (String aDynamicLoadSo : mNeedLoadSo) &#123;</div><div class="line">                    <span class="keyword">if</span> (aDynamicLoadSo.contains(oneSo)) &#123;</div><div class="line">                        loadSoNum--;</div><div class="line">                        <span class="keyword">break</span>;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (loadSoNum == <span class="number">0</span>) &#123;</div><div class="line">                mSoStatus = <span class="number">1</span>;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> loadSoNum == <span class="number">0</span>;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">/**</span></div><div class="line">     * 解压下载的so的zip包</div><div class="line">     */</div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">unzipSoToLibs</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            String libPath = App.get().getDir(mSoLibName,</div><div class="line">            						Context.MODE_PRIVATE).getAbsolutePath();</div><div class="line">            <span class="comment">// 获取sdcard中xx目录</span></div><div class="line">            File zipFilePath = FileUtil.getXXExternalDirectory();</div><div class="line">            File zipFile = <span class="keyword">new</span> File(zipFilePath, mZipFileName);</div><div class="line">            <span class="keyword">if</span> (zipFile.exists()		<span class="comment">// 存在此mZipFileName的File</span></div><div class="line">                    &amp;&amp; zipFile.isFile()	<span class="comment">// mZipFileName是文件（以上两个表示已经下载过so的zip文件）</span></div><div class="line">                    &amp;&amp; FileUtil.checkFileMd5(zipFile, mZipFileMd5)) &#123;	<span class="comment">// 校验MD5</span></div><div class="line">                <span class="comment">// 利用解压工具解压zip文件到/data/data/xxx.yyy/app_lib目录下</span></div><div class="line">                ZipUtil.unzip(zipFile.getAbsolutePath(), libPath, <span class="keyword">false</span>);</div><div class="line">                mSoStatus = <span class="number">1</span>;</div><div class="line">                <span class="keyword">return</span> <span class="keyword">true</span>;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            StatisticWorkFlow.reportHjyVoice(<span class="string">"unzip_so_failure"</span>);</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</div><div class="line">    &#125;</div><div class="line">     <span class="comment">// 是否需要下载so：只有sdcard的xx目录中没有so的压缩包并且app_lib目录中也没有对应so</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">isNeedDownloadSo</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> !hasZipSo() &amp;&amp; !existSoInLib();</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// 外部存储是否存在so的zip包</span></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">hasZipSo</span><span class="params">()</span> </span>&#123;</div><div class="line">        File zipFilePath = FileUtil.getXXExternalDirectory();</div><div class="line">        File zipFile = <span class="keyword">new</span> File(zipFilePath, mZipFileName);</div><div class="line">        <span class="keyword">return</span> zipFile.exists()</div><div class="line">                &amp;&amp; zipFile.isFile()</div><div class="line">                &amp;&amp; FileUtil.checkFileMd5(zipFile, mZipFileMd5);</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// zip文件下载</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">downloadZipSo</span><span class="params">()</span></span>&#123;</div><div class="line">    	<span class="comment">// 省略，需要注意下载进度、下载完成时自动load so等</span></div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>动态加载so成功后，就可以进行库的实际初始化相关逻辑了。</p>
+<p>实际项目中，动态加载了so后，仍然有其他的坑，一个坑是jar包中仍然调用了<code>System.loadLibrary</code>的方法，而实际lib目录中没有相应的so， 还好是公司内的库，在内部的仓库中找到了java部分的源代码，替换jar包，屏蔽所有<code>System.loadLibrary</code>的调用。另一个大坑是某个so内部某个xx方法调用了<code>System.loadLibrary</code>的函数，而该方法最后在java层调用，尝试过两种方法，最终用通过替换已载入内存中so的lib字符串为app_lib方法解决了（替换也可能有风险，因为修改了lib字符串起始位置起+后面四位的内存，幸运后四位内存修改没对其他部分逻辑有影响）。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/项目Log/" rel="tag">#项目Log</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/06/18/Framework之APK启动分析/" rel="next" title="Framework之APK启动分析">
+                <i class="fa fa-chevron-left"></i> Framework之APK启动分析
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/08/03/Android NDK开发/" rel="prev" title="Android NDK开发">
+                Android NDK开发 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="wangzs" />
+          <p class="site-author-name" itemprop="name">wangzs</p>
+          <p class="site-description motion-element" itemprop="description">wangzs</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/wangzs" target="_blank">
+                  
+                    <i class="fa fa-github"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/volix" target="_blank">
+                  
+                    <i class="fa fa-weibo"></i> weibo
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#简介"><span class="nav-number">1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思路"><span class="nav-number">2.</span> <span class="nav-text">思路</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#具体步骤"><span class="nav-number">3.</span> <span class="nav-text">具体步骤</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#打包so文件"><span class="nav-number">3.1.</span> <span class="nav-text">打包so文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#客户端的下载、校验和解压"><span class="nav-number">3.2.</span> <span class="nav-text">客户端的下载、校验和解压</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#下载"><span class="nav-number">3.2.1.</span> <span class="nav-text">下载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MD5校验"><span class="nav-number">3.2.2.</span> <span class="nav-text">MD5校验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#zip文件解压"><span class="nav-number">3.2.3.</span> <span class="nav-text">zip文件解压</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#拷贝so"><span class="nav-number">3.3.</span> <span class="nav-text">拷贝so</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#加载so"><span class="nav-number">3.4.</span> <span class="nav-text">加载so</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#部分实现代码"><span class="nav-number">4.</span> <span class="nav-text">部分实现代码</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzs</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+
+  
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/MathJax.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/config/TeX-AMS-MML_HTMLorMML.js"></script>
+  
+
+
+  
+
+
+</body>
+</html>

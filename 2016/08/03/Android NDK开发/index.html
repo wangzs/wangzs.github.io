@@ -1,0 +1,1103 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,NDK,c++," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="基本使用Data Types主要有两种：primitive types和Reference types
+Primitive Types基础类型的对应表：
+
+
+
+Java Type
+JNI Type
+c++ Type
+Size
+
+
+
+
+Boolean
+Jboolean
+unsigned char
+8 bit
+
+
+Byte
+Jbyte
+char
+8 bit
+
+
+Char
+Jchar
+unsigned">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android NDK开发">
+<meta property="og:url" content="wangzs.github.io/2016/08/03/Android NDK开发/index.html">
+<meta property="og:site_name" content="千里之行码于足下">
+<meta property="og:description" content="基本使用Data Types主要有两种：primitive types和Reference types
+Primitive Types基础类型的对应表：
+
+
+
+Java Type
+JNI Type
+c++ Type
+Size
+
+
+
+
+Boolean
+Jboolean
+unsigned char
+8 bit
+
+
+Byte
+Jbyte
+char
+8 bit
+
+
+Char
+Jchar
+unsigned">
+<meta property="og:updated_time" content="2017-02-05T17:09:28.871Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android NDK开发">
+<meta name="twitter:description" content="基本使用Data Types主要有两种：primitive types和Reference types
+Primitive Types基础类型的对应表：
+
+
+
+Java Type
+JNI Type
+c++ Type
+Size
+
+
+
+
+Boolean
+Jboolean
+unsigned char
+8 bit
+
+
+Byte
+Jbyte
+char
+8 bit
+
+
+Char
+Jchar
+unsigned">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Android NDK开发 | 千里之行码于足下 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">千里之行码于足下</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">我是一只小小猿</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-libs">
+          <a href="/Libs" rel="section">
+            
+              <i class="menu-item-icon fa fa-gears fa-fw"></i> <br />
+            
+            Libs
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Android NDK开发
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-08-03T20:46:00+08:00" content="2016-08-03">
+              2016-08-03
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h1><h2 id="Data-Types"><a href="#Data-Types" class="headerlink" title="Data Types"></a>Data Types</h2><p>主要有两种：<code>primitive types</code>和<code>Reference types</code></p>
+<h3 id="Primitive-Types"><a href="#Primitive-Types" class="headerlink" title="Primitive Types"></a>Primitive Types</h3><p>基础类型的对应表：</p>
+<table>
+<thead>
+<tr>
+<th><strong>Java Type</strong></th>
+<th><strong>JNI Type</strong></th>
+<th><strong>c++ Type</strong></th>
+<th><strong>Size</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boolean</td>
+<td>Jboolean</td>
+<td>unsigned char</td>
+<td>8 bit</td>
+</tr>
+<tr>
+<td>Byte</td>
+<td>Jbyte</td>
+<td>char</td>
+<td>8 bit</td>
+</tr>
+<tr>
+<td>Char</td>
+<td>Jchar</td>
+<td>unsigned short</td>
+<td>16 bit</td>
+</tr>
+<tr>
+<td>Short</td>
+<td>Jshort</td>
+<td>short</td>
+<td>16 bit</td>
+</tr>
+<tr>
+<td>Int</td>
+<td>Jint</td>
+<td>int</td>
+<td>32 bit</td>
+</tr>
+<tr>
+<td>Long</td>
+<td>Jlong</td>
+<td>long long</td>
+<td>64 bit</td>
+</tr>
+<tr>
+<td>Float</td>
+<td>Jfloat</td>
+<td>float</td>
+<td>32 bit</td>
+</tr>
+<tr>
+<td>Double</td>
+<td>Jdouble</td>
+<td>double</td>
+<td>64 bit</td>
+</tr>
+</tbody>
+</table>
+<a id="more"></a>
+<h3 id="Reference-Types"><a href="#Reference-Types" class="headerlink" title="Reference Types"></a>Reference Types</h3><table>
+<thead>
+<tr>
+<th><strong>Java Type</strong></th>
+<th><strong>Native Type</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>java.lang.Class</td>
+<td>jclass</td>
+</tr>
+<tr>
+<td>java.lang.Throwable</td>
+<td>jthrowable</td>
+</tr>
+<tr>
+<td>java.lang.String</td>
+<td>jstring</td>
+</tr>
+<tr>
+<td>Other objects</td>
+<td>jobject</td>
+</tr>
+<tr>
+<td>java.lang.Object[]</td>
+<td>jobjectArray</td>
+</tr>
+<tr>
+<td>boolean[]</td>
+<td>jbooleanArray</td>
+</tr>
+<tr>
+<td>byte[]</td>
+<td>jbyteArray</td>
+</tr>
+<tr>
+<td>char[]</td>
+<td>jbyteArray</td>
+</tr>
+<tr>
+<td>short[]</td>
+<td>jshortArray</td>
+</tr>
+<tr>
+<td>int[]</td>
+<td>jintArray</td>
+</tr>
+<tr>
+<td>long[]</td>
+<td>jlongArray</td>
+</tr>
+<tr>
+<td>float[]</td>
+<td>jfloatArray</td>
+</tr>
+<tr>
+<td>double[]</td>
+<td>jdoubleArray</td>
+</tr>
+</tbody>
+</table>
+<h2 id="引用类型数据操作"><a href="#引用类型数据操作" class="headerlink" title="引用类型数据操作"></a>引用类型数据操作</h2><h3 id="String-Operations"><a href="#String-Operations" class="headerlink" title="String Operations"></a><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#string_operations" target="_blank" rel="external">String Operations</a></h3><p>JNI支持Unicode和UTF-8编码的strings</p>
+<h4 id="创建新的String"><a href="#创建新的String" class="headerlink" title="创建新的String"></a>创建新的String</h4><p>对于Unicode的string使用<code>NewString</code>，对于UTF-8的string使用<code>NewStringUTF</code>。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">jstring jstr0 = (*env)-&gt;NewStringUTF(eng, <span class="string">"UTF-8编码字符"</span>);</div><div class="line">jstring jstr1 = (*env)-&gt;NewString(eng, <span class="string">"Unicode编码字符"</span>);</div></pre></td></tr></table></figure></p>
+<h4 id="java的string转为C-string"><a href="#java的string转为C-string" class="headerlink" title="java的string转为C string"></a>java的string转为C string</h4><p>对于Unicode的string使用<code>GetStringChars</code>，对于UTF-8的string使用<code>GetStringUTFChars</code>(注：当这两个Get函数得到的字符串不再使用时，需要调用相应的<code>ReleaseStringChars</code>和<code>ReleaseStringUTFChars</code>函数)<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> jbyte* str;</div><div class="line">str = (*env)-&gt;GetStringUTFChars(env, javaString, null);</div><div class="line"><span class="comment">// 当native不再使用str时，通知VM释放string资源</span></div><div class="line">(*env)-&gt;ReleaseStringUTFChars(env, javaString, str);</div></pre></td></tr></table></figure></p>
+<h3 id="Array-Operations"><a href="#Array-Operations" class="headerlink" title="Array Operations"></a><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#array_operations" target="_blank" rel="external">Array Operations</a></h3><h4 id="创建新的Array"><a href="#创建新的Array" class="headerlink" title="创建新的Array"></a>创建新的Array</h4><p>不同的primitive type对应的创建函数形如<code>New&lt;TYpe&gt;Array</code>的函数，如<code>NewIntArray</code>。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">jintArray jIntArr;</div><div class="line">jIntArr = (*env)-&gt;NewIntArray(env, <span class="number">10</span>);</div></pre></td></tr></table></figure></p>
+<h4 id="存取Array的Elements"><a href="#存取Array的Elements" class="headerlink" title="存取Array的Elements"></a>存取Array的Elements</h4><p>JNI提供了两种存取Java数组元素的方法。</p>
+<ol>
+<li><p>Operating on Copy<br>先调用<code>Get&lt;Type&gt;ArrayRegion</code>取出，然后操作刚刚取出放在native的数组中的数组，最后调用<code>Set&lt;Type&gt;ArrayRegion</code>将数据设回到java数组对象中。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">jint nativeArray[<span class="number">10</span>];</div><div class="line">(*env)-&gt;GetIntArrayRegion(env, javaArray, <span class="number">0</span>, <span class="number">10</span>, nativeArray);</div><div class="line">(*env)-&gt;SetIntArrayRegion(env, javaArray, <span class="number">0</span>, <span class="number">10</span>, nativeArray);</div></pre></td></tr></table></figure>
+</li>
+<li><p>Operating on Direct Pointer<br>调用<code>Get&lt;Type&gt;ArrayElements</code>函数返回Type对应的类型数据的内容，如果<code>isCopy</code>值变成了<code>JNI_TRUE</code>，则表示返回的数组是java数组的一份拷贝；当返回的数组是copy的，其内元素变化并不需要体现到原始java数组上，当调用<code>Release&lt;Type&gt;ArrayElements</code>后再将变化体现到原始java数组。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">jint* nativeDirectArray;</div><div class="line">jboolean isCopy;</div><div class="line">nativeDirectArray = env-&gt;GetIntArrayElements(arr, &amp;isCopy);</div><div class="line"><span class="comment">// 如果此时isCopy为JNI_TRUE，表示get函数返回的是一份copy数据</span></div><div class="line">nativeDirectArray[<span class="number">0</span>] = <span class="number">100</span>;</div><div class="line">env-&gt;ReleaseIntArrayElements(arr, nativeDirectArray, <span class="number">0</span>);</div><div class="line"><span class="comment">// 这样java层传进来的int数组第一个元素值变成了100</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+<p><code>Release&lt;Type&gt;ArrayElements</code>函数的第三个mode参数可选值：<br>| mode       | actions                                  |<br>| ———- | —————————————- |<br>| 0          | copy back the content and free the elems buffer |<br>| JNI_COMMIT | copy back the content but do not free the elems buffer |<br>| JNI_ABORT  | free the buffer without copying back the possible changes |</p>
+<p>此参数只有在get的函数的<code>isCopy</code>值为<code>JNI_TRUE</code>时才有用，即返回的是copy array时起作用。</p>
+<h3 id="NIO-Support"><a href="#NIO-Support" class="headerlink" title="NIO Support"></a><a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#nio_support" target="_blank" rel="external">NIO Support</a></h3><h4 id="New-Direct-Byte-Buffer"><a href="#New-Direct-Byte-Buffer" class="headerlink" title="New Direct Byte Buffer"></a>New Direct Byte Buffer</h4><p>在native代码中直接分配内存，然后给java使用<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// native自己管理内存的释放</span></div><div class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* buffer = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*) <span class="built_in">malloc</span>(<span class="number">1024</span>);</div><div class="line">jobject directBuffer;</div><div class="line">directBuffer = (*env)-&gt;NewDirectByteBuffer(env, buffer, <span class="number">1024</span>);</div></pre></td></tr></table></figure></p>
+<h4 id="Getting-the-Direct-Byte-Buffer"><a href="#Getting-the-Direct-Byte-Buffer" class="headerlink" title="Getting the Direct Byte Buffer"></a>Getting the Direct Byte Buffer</h4><p>可以直接在Java中创建java.nio.ByteBuffer的一个对象，然后在native层调用<code>GetDirectBufferAddress</code>函数获取其内存地址：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">unsigned</span> <span class="keyword">char</span>* buffer;</div><div class="line">buffer = (<span class="keyword">unsigned</span> <span class="keyword">char</span>*) (*env)-&gt;GetDirectBufferAddress(env, directBuffer);</div></pre></td></tr></table></figure></p>
+<h3 id="存取Fields"><a href="#存取Fields" class="headerlink" title="存取Fields"></a>存取Fields</h3><p>包括两种类型：<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#accessing_fields_of_objects" target="_blank" rel="external">实例对象Fields</a>和<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#accessing_static_fields" target="_blank" rel="external">静态Fields</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">JavaClass</span> </span>&#123;</div><div class="line"> <span class="comment">/** Instance field */</span></div><div class="line"> <span class="keyword">private</span> String instanceField = <span class="string">"Instance Field"</span>;</div><div class="line"> <span class="comment">/** Static field */</span></div><div class="line"> <span class="keyword">private</span> <span class="keyword">static</span> String staticField = <span class="string">"Static Field"</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="获取Field-ID"><a href="#获取Field-ID" class="headerlink" title="获取Field ID"></a>获取Field ID</h4><p>可以通过<strong>class</strong> object来获取java对象实例的field ID，<strong>class</strong> object通过<code>GetObjectClass</code>函数获取。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">jclass clazz;</div><div class="line">clazz = (*env)-&gt;GetObjectClass(env, javaInstance);</div></pre></td></tr></table></figure></p>
+<p>有两个函数可以从class中获取field ID。<code>GetFieldId</code>方法用于获取instance的fields<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">jfieldID instanceFieldId;</div><div class="line"><span class="comment">// java中javaInstance对应的class类中存在一个String someField的成员变量</span></div><div class="line">instanceFieldId = (*env)-&gt;GetFieldID(env, clazz, <span class="string">"someField"</span>, <span class="string">"Ljava/lang/String;"</span>);</div></pre></td></tr></table></figure></p>
+<p><code>GetStaticFieldID</code>用于获取静态fields<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">jfieldID staticFieldId;</div><div class="line"><span class="comment">// java中javaInstance对应的class中有一个静态String staticField的成员</span></div><div class="line">staticFieldId = (*env)-&gt;GetStaticFieldID(env, clazz, <span class="string">"staticField"</span>, <span class="string">"Ljava/lang/String;"</span>);</div></pre></td></tr></table></figure></p>
+<p>获取instance Field的函数：<code>Get&lt;Type&gt;Field</code><br>获取静态Field的函数：<code>GetStatic&lt;Type&gt;Field</code><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">jstring staticField, instanceField;</div><div class="line">instanceField = (*env)-&gt;GetObjectField(env, javaInstance, instanceFieldId);</div><div class="line">staticField = (*env)-&gt;GetStaticObjectField(env, clazz, staticFieldId);</div></pre></td></tr></table></figure></p>
+<p>获取单个field的值需要调用多个JNI函数，从native代码回到Java中获取对应field值，会降低性能，一般推荐将需要用到的对象直接以参数形式传到native层。</p>
+<h3 id="调用Methods"><a href="#调用Methods" class="headerlink" title="调用Methods"></a>调用Methods</h3><p>同fields类似，java中也由两种类型的method：instance method和static method。JNI提供获取这两种类型method的函数。</p>
+<h4 id="获取Method-ID"><a href="#获取Method-ID" class="headerlink" title="获取Method ID"></a>获取Method ID</h4><p>使用<code>GetMethodID</code>函数获取instance method的method ID；使用<code>GetStaticMethodID</code>函数获取static method的method ID。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">jmethodID instanceMethodId;</div><div class="line">instanceMethodId = (*env)-&gt;GetMethodID(env, clazz,</div><div class="line"> <span class="string">"instanceMethod"</span>, <span class="string">"()Ljava/lang/String;"</span>);</div><div class="line"> </div><div class="line">jmethodID staticMethodId;</div><div class="line">staticMethodId = (*env)-&gt;GetStaticMethodID(env, clazz,</div><div class="line"> <span class="string">"staticMethod"</span>, <span class="string">"()Ljava/lang/String;"</span>);</div></pre></td></tr></table></figure></p>
+<h4 id="调用Method"><a href="#调用Method" class="headerlink" title="调用Method"></a>调用Method</h4><p>通过上面获取到的method ID来调用实际的函数方法，使用<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#calling_instance_methods" target="_blank" rel="external"><code>Call&lt;Type&gt;Method</code>函数</a>调用instance methods；使用<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/jni/spec/functions.html#calling_static_methods" target="_blank" rel="external"><code>CallStatic&lt;Type&gt;Method</code>函数</a>调用static methods。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">jstring instanceMethodResult;</div><div class="line">instanceMethodResult = (*env)-&gt;CallObjectMethod(env, instance, instanceMethodId);</div><div class="line">jstring staticMethodResult;</div><div class="line">staticMethodResult = (*env)-&gt;CallStaticObjectMethod(env, clazz, staticMethodId);</div></pre></td></tr></table></figure></p>
+<h3 id="Field和Method的Descriptors"><a href="#Field和Method的Descriptors" class="headerlink" title="Field和Method的Descriptors"></a>Field和Method的Descriptors</h3><table>
+<thead>
+<tr>
+<th style="text-align:center"><strong>Java Type</strong></th>
+<th style="text-align:center"><strong>Signature</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">Boolean</td>
+<td style="text-align:center">Z</td>
+</tr>
+<tr>
+<td style="text-align:center">Byte</td>
+<td style="text-align:center">B</td>
+</tr>
+<tr>
+<td style="text-align:center">Char</td>
+<td style="text-align:center">C</td>
+</tr>
+<tr>
+<td style="text-align:center">Short</td>
+<td style="text-align:center">S</td>
+</tr>
+<tr>
+<td style="text-align:center">Int</td>
+<td style="text-align:center">I</td>
+</tr>
+<tr>
+<td style="text-align:center">Long</td>
+<td style="text-align:center">L</td>
+</tr>
+<tr>
+<td style="text-align:center">Float</td>
+<td style="text-align:center">F</td>
+</tr>
+<tr>
+<td style="text-align:center">Double</td>
+<td style="text-align:center">D</td>
+</tr>
+<tr>
+<td style="text-align:center">fully-qualified-class</td>
+<td style="text-align:center">Lfully-qualified-class;</td>
+</tr>
+<tr>
+<td style="text-align:center">type[]</td>
+<td style="text-align:center">[type</td>
+</tr>
+<tr>
+<td style="text-align:center">method type</td>
+<td style="text-align:center">(arg-type)ret-type</td>
+</tr>
+</tbody>
+</table>
+<h2 id="异常处理-Exception-Handling"><a href="#异常处理-Exception-Handling" class="headerlink" title="异常处理(Exception Handling)"></a>异常处理(Exception Handling)</h2><ul>
+<li><p>native层的异常处理</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">jthrowable ex;</div><div class="line"><span class="comment">// throwingMethodId对应的java方法会抛出一个异常</span></div><div class="line">(*env)-&gt;CallVoidMethod(env, instance, throwingMethodId);</div><div class="line">ex = (*env)-&gt;ExceptionOccurred(env);</div><div class="line"><span class="keyword">if</span> (<span class="number">0</span> != ex) &#123;</div><div class="line">	(*env)-&gt;ExceptionClear(env);</div><div class="line">	<span class="comment">// 异常的处理逻辑</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>native层的异常抛出</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">jclass clazz;</div><div class="line">clazz = (*env)-&gt;FindClass(env, <span class="string">"java/lang/NullPointerException"</span>);</div><div class="line"><span class="keyword">if</span> (<span class="number">0</span> ! = clazz) &#123;</div><div class="line">	(*env)-&gt;ThrowNew(env, clazz, <span class="string">"Exception message."</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>native层抛出异常不会终止native函数的执行，也不会控制转移到异常处理（exception handler）。</p>
+<h2 id="局部和全局引用"><a href="#局部和全局引用" class="headerlink" title="局部和全局引用"></a>局部和全局引用</h2><p>JNI支持3中引用类型：局部引用、全局引用和弱全局引用。</p>
+<h3 id="局部引用-Local-References"><a href="#局部引用-Local-References" class="headerlink" title="局部引用(Local References)"></a>局部引用(Local References)</h3><p>很多JNI函数返回的是local references，local references在native函数return时释放，当然也可以显示调用<code>DeleteLocalRef</code>函数进行释放。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">jclass clazz;</div><div class="line"><span class="comment">// FindClass返回的就是一个local reference</span></div><div class="line">clazz = (*env)-&gt;FindClass(env, <span class="string">"java/lang/String"</span>);</div></pre></td></tr></table></figure></p>
+<h3 id="创建一个Global-Reference"><a href="#创建一个Global-Reference" class="headerlink" title="创建一个Global Reference"></a>创建一个Global Reference</h3><p>调用<code>NewGlobalRef</code>函数并以local reference来初始化Global reference<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">jclass localClazz, globalClazz;</div><div class="line">localClazz = (*env)-&gt;FindClass(env, <span class="string">"java/lang/String"</span>);</div><div class="line"><span class="comment">// 由local reference初始化一个global reference</span></div><div class="line">globalClazz = (*env)-&gt;NewGlobalRef(env, localClazz);</div><div class="line"><span class="comment">// 显式删除了local reference</span></div><div class="line">(*env)-&gt;DeleteLocalRef(evn, localClazz);</div></pre></td></tr></table></figure></p>
+<h3 id="删除一个Global-Reference"><a href="#删除一个Global-Reference" class="headerlink" title="删除一个Global Reference"></a>删除一个Global Reference</h3><p>当一个global reference不再使用时需要主动删除，使用<code>DeleteGlobalRef</code>函数<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(*env)-&gt;DeleteGlobalRef(env, globalClazz);</div></pre></td></tr></table></figure></p>
+<h3 id="弱全局引用"><a href="#弱全局引用" class="headerlink" title="弱全局引用"></a>弱全局引用</h3><p>类似于global reference，不过native层的弱引用对象不会阻止垃圾回收（即垃圾回收时，此弱全局引用可能会被回收）</p>
+<ul>
+<li><p>创建弱全局引用</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">jclass weakGlobalClazz;</div><div class="line">weakGlobalClazz = (*env)-&gt;NewWeakGlobalRef(env, localClazz);</div></pre></td></tr></table></figure>
+</li>
+<li><p>判断弱全局引用的有效性</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (JNI_FALSE == (*env)-&gt;IsSameObject(env, weakGlobalClazz, <span class="literal">NULL</span>)) &#123;</div><div class="line"> <span class="comment">// 对象可以使用</span></div><div class="line">&#125; <span class="keyword">else</span> &#123;</div><div class="line"> <span class="comment">// 对象已经被回收，不可以使用了</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="删除弱全局引用"><a href="#删除弱全局引用" class="headerlink" title="删除弱全局引用"></a>删除弱全局引用</h3><p>可以在任何时候调用<code>DeleteWeakGlobalRef</code>函数来释放弱全局引用<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(*env)-&gt;DeleteWeakGlobalRef(env, weakGlobalClazz);</div></pre></td></tr></table></figure></p>
+<h2 id="线程-Threading"><a href="#线程-Threading" class="headerlink" title="线程(Threading)"></a>线程(Threading)</h2><ul>
+<li>Local references没法在多个线程之间贡献使用；Global references可以在多个线程之间共享使用；</li>
+<li>JNIEnv接口指针是在每个native方法调用时传入，它也是与调用方法所在线程相关的，不能cached并且不能在其他线程使用。<br>在java层使用<code>synchronized</code>来控制不同线程同步问题<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">synchronized</span>(obj) &#123;</div><div class="line">	<span class="comment">/* Synchronized thread-safe code block. */</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在native层，使用JNI的 monitor方法<code>MonitorEnter</code>和<code>MonitorExit</code>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (JNI_OK == (*env)-&gt;MonitorEnter(env, ob)j) &#123;</div><div class="line">  <span class="comment">/* Error handling. */</span></div><div class="line">&#125;</div><div class="line"><span class="comment">/* Synchronized thread-safe code block. */</span></div><div class="line"><span class="keyword">if</span> (JNI_OK == (*env)-&gt;MonitorExit(env, obj)) &#123;</div><div class="line"> <span class="comment">/* Error handling. */</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h3 id="Native-Threads"><a href="#Native-Threads" class="headerlink" title="Native Threads"></a>Native Threads</h3><p>native层使用native threads执行多线程任务时，java虚拟机是不知道这些native threads的，故他们不能直接与java组件直接进行communicate。Native threads被attached到虚拟机后就可以进行communicate了。<br>JNI提供的<code>AttachCurrentThread</code>函数允许native threads被attached到虚拟机，需要提供<code>JavaVM</code>类型的指针作为参数，所以需要提前将JavaVM接口指针缓存。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">JavaVM* cachedJvm;</div><div class="line">...</div><div class="line">JNIEnv* env;</div><div class="line">...</div><div class="line"><span class="comment">/* Attach the current thread to virtual machine. */</span></div><div class="line">(*cachedJvm)-&gt;AttachCurrentThread(cachedJvm, &amp;env, <span class="literal">NULL</span>);</div><div class="line"><span class="comment">/* Thread can communicate with the Java application</span></div><div class="line"> using the JNIEnv interface. */</div><div class="line"> <span class="comment">/* Detach the current thread from virtual machine. */</span></div><div class="line">(*cachedJvm)-&gt;DetachCurrentThread(cachedJvm);</div></pre></td></tr></table></figure></p>
+<p>调用<code>AttachCurrentThread</code>函数让application可以获得<code>JNIEnv</code>接口指针，它在当前的thread是有效的。已经attached了的native thread再attach也没有问题。当native thread执行完时，可以使用<code>DetachCurrentThread</code>函数将它从虚拟机上detached。</p>
+<h1 id="跟踪调试"><a href="#跟踪调试" class="headerlink" title="跟踪调试"></a>跟踪调试</h1><h2 id="Logging"><a href="#Logging" class="headerlink" title="Logging"></a>Logging</h2><p>Android的logging框架logger是作为一个内核模块实现。<br>native层想使用log功能步骤：</p>
+<ol>
+<li>引入头文件<code>#include &lt;android/log.h&gt;</code></li>
+<li><code>Android.mk</code>文件中配置log库，<code>LOCAL_LDLIBS</code>的设置必须在配置编译shared lib之前：<figure class="highlight mk"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">LOCAL_MODULE := custom_jni</div><div class="line">...</div><div class="line">LOCAL_LDLIBS += -llog</div><div class="line">...</div><div class="line">include $(BUILD_SHARED_LIBRARY)</div></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="Logging函数"><a href="#Logging函数" class="headerlink" title="Logging函数"></a>Logging函数</h3><p><code>android/log.h</code>头文件中声明的打印log的函数接口：</p>
+<ul>
+<li><p><code>__android_log_write</code>： 输出一个简单字string的log信息，传入log优先级、log的tag和log信息</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">__android_log_write(ANDROID_LOG_WARN, <span class="string">"custom_jni"</span>, <span class="string">"simple warning log"</span>);</div></pre></td></tr></table></figure>
+</li>
+<li><p><code>__android_log_print</code>：输出一个格式化的string信息，传入log优先级、log的tag、log信息的格式化字符以及格式化所需的参数</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">__android_log_print(ANDROID_LOG_ERROR, <span class="string">"custom_jni"</span>, <span class="string">"format string %d"</span>, param_value);</div></pre></td></tr></table></figure>
+</li>
+<li><p><code>__android_log_vprint</code>：类似于<code>__android_log_print</code>，只是传入的参数是<code>va_list</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">log_verbose</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* format, ...)</span> </span>&#123;</div><div class="line"> va_list args;</div><div class="line"> va_start(args, format);</div><div class="line"> __android_log_vprint(ANDROID_LOG_VERBOSE, <span class="string">"custom_jni"</span>, format, args);</div><div class="line"> va_end(args);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p><code>__android_log_assert</code>：用于assertion错误，没有log等级设置。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">if</span> (<span class="number">0</span> != errno) &#123;</div><div class="line"> __android_log_assert(<span class="string">"0 != errno"</span>, <span class="string">"custom_jni"</span>,</div><div class="line"> <span class="string">"There is an error."</span>);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="native层控制log的输出"><a href="#native层控制log的输出" class="headerlink" title="native层控制log的输出"></a>native层控制log的输出</h3><p>java层很容易通过配置Proguard来达到release版本中取出log的目的，native层就没有这么方便的方法了。</p>
+<h4 id="console-log的显示"><a href="#console-log的显示" class="headerlink" title="console log的显示"></a>console log的显示</h4><p>stdout和stderr默认在Android中时不显示的。为了将这些log重定向到Android的log系统中，需要执行下面adb命令：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">adb shell stop</div><div class="line">adb shell setprop log.redirect-stdio <span class="literal">true</span></div><div class="line">adb shell start</div></pre></td></tr></table></figure></p>
+<h2 id="调试"><a href="#调试" class="headerlink" title="调试"></a>调试</h2><p>TODO</p>
+<h1 id="Bionic-API基础"><a href="#Bionic-API基础" class="headerlink" title="Bionic API基础"></a>Bionic API基础</h1><h2 id="执行shell命令"><a href="#执行shell命令" class="headerlink" title="执行shell命令"></a>执行shell命令</h2><ul>
+<li>头文件<br><code>#include &lt;stdlib.h&gt;</code></li>
+<li>使用system函数接口<br><code>int result = system(&quot;mkdir /data/data/com.example.hellojni/temp&quot;);</code></li>
+<li>使用<code>popen</code>和<code>pclose</code>接口<br>该函数用于打开父子进程间的双向管道<br><code>FILE *popen(const char* command, const char* type);</code><br>当子进程完成执行时关闭stream<br><code>int pclose(FILE* stream)</code></li>
+</ul>
+<h2 id="系统配置"><a href="#系统配置" class="headerlink" title="系统配置"></a>系统配置</h2><ul>
+<li>头文件<br><code>#include &lt;sys/system_properties.h&gt;</code>，其中<code>PROP_NAME_MAX</code>用于表示最长属性名，<code>PROP_VALUE_MAX</code>用于表示最长字符值。</li>
+<li>由名字获取系统属性值<br><code>__system_property_get</code>函数通过名字查询系统属性<br><code>__system_property_find</code>函数可以用来获取直接指向系统属性的一个指针，再由<code>__system_property_read</code>函数通过上面的指针获取属性值。<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> prop_info* property;</div><div class="line"><span class="comment">/* Gets the product model system property. */</span></div><div class="line">property = __system_property_find(<span class="string">"ro.product.model"</span>);</div><div class="line"><span class="keyword">char</span> name[PROP_NAME_MAX];</div><div class="line"><span class="keyword">char</span> value[PROP_VALUE_MAX];</div><div class="line"><span class="comment">/* Get the system property name and value. */</span></div><div class="line"><span class="keyword">if</span> (<span class="number">0</span> == __system_property_read(property, name, value)) &#123; &#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="用户和群组"><a href="#用户和群组" class="headerlink" title="用户和群组"></a>用户和群组</h2><ul>
+<li>头文件<br><code>#include &lt;unistd.h&gt;</code></li>
+<li>获取App的User和Group ID<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">uid_t</span> uid;</div><div class="line"><span class="comment">/* Get the application user ID. */</span></div><div class="line">uid = getuid();</div><div class="line"></div><div class="line"><span class="keyword">gid_t</span> gid;</div><div class="line"><span class="comment">/* Get the application group ID. */</span></div><div class="line">gid = getgid();</div><div class="line"></div><div class="line"><span class="keyword">char</span>* username;</div><div class="line"><span class="comment">/* Get the application user name. */</span></div><div class="line">username = getlogin();</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Native-Threads-1"><a href="#Native-Threads-1" class="headerlink" title="Native Threads"></a>Native Threads</h1><h2 id="Posix-Threads"><a href="#Posix-Threads" class="headerlink" title="Posix Threads"></a>Posix Threads</h2><ul>
+<li>头文件<br><code>#include &lt;pthread.h&gt;</code></li>
+<li><p>Threads的创建</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">int pthread_create(pthread_t* thread,</div><div class="line">   pthread_attr_t const* attr,</div><div class="line">   void* (*start_routine)(void*),</div><div class="line">   void* arg);</div></pre></td></tr></table></figure>
+</li>
+<li><p>Thread返回值</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 调用pthread_join会挂起调用线程的执行，知道新线程结束</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_join</span><span class="params">(<span class="keyword">pthread_t</span> thread, <span class="keyword">void</span>** ret_val)</span></span>;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h2 id="Posix线程同步"><a href="#Posix线程同步" class="headerlink" title="Posix线程同步"></a>Posix线程同步</h2><p>两种同步机制：mutex和semaphore</p>
+<h3 id="Mutex互斥锁"><a href="#Mutex互斥锁" class="headerlink" title="Mutex互斥锁"></a>Mutex互斥锁</h3><p><strong>初始化mutex</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 初始化方法1</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_init</span><span class="params">(<span class="keyword">pthread_mutex_t</span>* mutex,</span></span></div><div class="line">       <span class="keyword">const</span> <span class="keyword">pthread_mutexattr_t</span>* attr);</div><div class="line"><span class="comment">// 初始化方法2</span></div><div class="line"><span class="keyword">pthread_mutex_t</span> mutex = PTHREAD_MUTEX_INITIALIZER;</div></pre></td></tr></table></figure></p>
+<p><strong>Locking mutex</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 如果mutex已经被锁，调用lock后线程会挂起，直到mutex被unlock</span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_lock</span><span class="params">(<span class="keyword">pthread_mutex_t</span>* mutex)</span></span>;</div></pre></td></tr></table></figure></p>
+<p><strong>Unlocking mutex</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">pthread_mutex_unlock</span><span class="params">(<span class="keyword">pthread_mutex_t</span>* mutex)</span></span>;</div></pre></td></tr></table></figure></p>
+<h3 id="Semaphore信号量"><a href="#Semaphore信号量" class="headerlink" title="Semaphore信号量"></a>Semaphore信号量</h3><p>需要添加<code>#include &lt;semaphore.h&gt;</code>头文件。<br><strong>初始化信号量</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// sem表示要初始化的信号量  pshared共享标志  value初始化值</span></div><div class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">sem_init</span><span class="params">(<span class="keyword">sem_t</span>* sem, <span class="keyword">int</span> pshared, <span class="keyword">unsigned</span> <span class="keyword">int</span> value)</span></span>;</div></pre></td></tr></table></figure></p>
+<p><strong>Locking Semaphore</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 如果sem的值大于0，则locking成功，并对sem值减1；</span></div><div class="line"><span class="comment">//    如果等于0，则调用线程会挂起，直到另一线程unlocking信号量并使其值增加</span></div><div class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">sem_wait</span><span class="params">(<span class="keyword">sem_t</span>* sem)</span></span>;</div></pre></td></tr></table></figure></p>
+<p><strong>Unlocking Semaphore</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// unlock后信号量的值会相应+1，调度策略决定哪些因此信号量阻塞的线程中某个线程执行</span></div><div class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">sem_post</span><span class="params">(<span class="keyword">sem_t</span>* sem)</span></span>;</div></pre></td></tr></table></figure></p>
+<p><strong>Destroying Semaphores</strong>：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 如果销毁时，仍有其他线程被blocked可能出现未知的结果。</span></div><div class="line"><span class="function"><span class="keyword">extern</span> <span class="keyword">int</span> <span class="title">sem_destroy</span><span class="params">(<span class="keyword">sem_t</span>* sem)</span></span>;</div></pre></td></tr></table></figure></p>
+<h1 id="POSIX-Socket"><a href="#POSIX-Socket" class="headerlink" title="POSIX Socket"></a>POSIX Socket</h1><ul>
+<li>主要用到的头文件<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// JNI</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="comment">// NULL</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="comment">// va_list, vsnprintf</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdarg.h&gt;</span></span></div><div class="line"><span class="comment">// errno</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;errno.h&gt;</span></span></div><div class="line"><span class="comment">// strerror_r, memset</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></div><div class="line"><span class="comment">// socket, bind, getsockname, listen, accept, recv, send, connect</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/types.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/socket.h&gt;</span></span></div><div class="line"><span class="comment">// sockaddr_un</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/un.h&gt;</span></span></div><div class="line"><span class="comment">// htons, sockaddr_in</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;netinet/in.h&gt;</span></span></div><div class="line"><span class="comment">// inet_ntop</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;arpa/inet.h&gt;</span></span></div><div class="line"><span class="comment">// close, unlink</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;unistd.h&gt;</span></span></div><div class="line"><span class="comment">// offsetof</span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stddef.h&gt;</span></span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/NDK/" rel="tag">#NDK</a>
+          
+            <a href="/tags/c/" rel="tag">#c++</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/07/19/proj中的动态加载so/" rel="next" title="动态加载so">
+                <i class="fa fa-chevron-left"></i> 动态加载so
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="wangzs" />
+          <p class="site-author-name" itemprop="name">wangzs</p>
+          <p class="site-description motion-element" itemprop="description">wangzs</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/wangzs" target="_blank">
+                  
+                    <i class="fa fa-github"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/volix" target="_blank">
+                  
+                    <i class="fa fa-weibo"></i> weibo
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#基本使用"><span class="nav-number">1.</span> <span class="nav-text">基本使用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Data-Types"><span class="nav-number">1.1.</span> <span class="nav-text">Data Types</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Primitive-Types"><span class="nav-number">1.1.1.</span> <span class="nav-text">Primitive Types</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Reference-Types"><span class="nav-number">1.1.2.</span> <span class="nav-text">Reference Types</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#引用类型数据操作"><span class="nav-number">1.2.</span> <span class="nav-text">引用类型数据操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#String-Operations"><span class="nav-number">1.2.1.</span> <span class="nav-text">String Operations</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建新的String"><span class="nav-number">1.2.1.1.</span> <span class="nav-text">创建新的String</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#java的string转为C-string"><span class="nav-number">1.2.1.2.</span> <span class="nav-text">java的string转为C string</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Array-Operations"><span class="nav-number">1.2.2.</span> <span class="nav-text">Array Operations</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建新的Array"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">创建新的Array</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#存取Array的Elements"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">存取Array的Elements</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NIO-Support"><span class="nav-number">1.2.3.</span> <span class="nav-text">NIO Support</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#New-Direct-Byte-Buffer"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">New Direct Byte Buffer</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Getting-the-Direct-Byte-Buffer"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">Getting the Direct Byte Buffer</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存取Fields"><span class="nav-number">1.2.4.</span> <span class="nav-text">存取Fields</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取Field-ID"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">获取Field ID</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调用Methods"><span class="nav-number">1.2.5.</span> <span class="nav-text">调用Methods</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取Method-ID"><span class="nav-number">1.2.5.1.</span> <span class="nav-text">获取Method ID</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#调用Method"><span class="nav-number">1.2.5.2.</span> <span class="nav-text">调用Method</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Field和Method的Descriptors"><span class="nav-number">1.2.6.</span> <span class="nav-text">Field和Method的Descriptors</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#异常处理-Exception-Handling"><span class="nav-number">1.3.</span> <span class="nav-text">异常处理(Exception Handling)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#局部和全局引用"><span class="nav-number">1.4.</span> <span class="nav-text">局部和全局引用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#局部引用-Local-References"><span class="nav-number">1.4.1.</span> <span class="nav-text">局部引用(Local References)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建一个Global-Reference"><span class="nav-number">1.4.2.</span> <span class="nav-text">创建一个Global Reference</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除一个Global-Reference"><span class="nav-number">1.4.3.</span> <span class="nav-text">删除一个Global Reference</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#弱全局引用"><span class="nav-number">1.4.4.</span> <span class="nav-text">弱全局引用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除弱全局引用"><span class="nav-number">1.4.5.</span> <span class="nav-text">删除弱全局引用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程-Threading"><span class="nav-number">1.5.</span> <span class="nav-text">线程(Threading)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Native-Threads"><span class="nav-number">1.5.1.</span> <span class="nav-text">Native Threads</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#跟踪调试"><span class="nav-number">2.</span> <span class="nav-text">跟踪调试</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Logging"><span class="nav-number">2.1.</span> <span class="nav-text">Logging</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Logging函数"><span class="nav-number">2.1.1.</span> <span class="nav-text">Logging函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#native层控制log的输出"><span class="nav-number">2.1.2.</span> <span class="nav-text">native层控制log的输出</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#console-log的显示"><span class="nav-number">2.1.2.1.</span> <span class="nav-text">console log的显示</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#调试"><span class="nav-number">2.2.</span> <span class="nav-text">调试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Bionic-API基础"><span class="nav-number">3.</span> <span class="nav-text">Bionic API基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#执行shell命令"><span class="nav-number">3.1.</span> <span class="nav-text">执行shell命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#系统配置"><span class="nav-number">3.2.</span> <span class="nav-text">系统配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#用户和群组"><span class="nav-number">3.3.</span> <span class="nav-text">用户和群组</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Native-Threads-1"><span class="nav-number">4.</span> <span class="nav-text">Native Threads</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Posix-Threads"><span class="nav-number">4.1.</span> <span class="nav-text">Posix Threads</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Posix线程同步"><span class="nav-number">4.2.</span> <span class="nav-text">Posix线程同步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mutex互斥锁"><span class="nav-number">4.2.1.</span> <span class="nav-text">Mutex互斥锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Semaphore信号量"><span class="nav-number">4.2.2.</span> <span class="nav-text">Semaphore信号量</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#POSIX-Socket"><span class="nav-number">5.</span> <span class="nav-text">POSIX Socket</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzs</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+
+  
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/MathJax.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/config/TeX-AMS-MML_HTMLorMML.js"></script>
+  
+
+
+  
+
+
+</body>
+</html>

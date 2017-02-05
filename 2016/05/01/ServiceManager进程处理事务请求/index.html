@@ -1,0 +1,749 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Binder,ServiceManager," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="ServiceManager事务处理逻辑分析主要涉及代码：service_managerbinder.hbinder.c内核中的binder.c">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ServiceManager事务处理逻辑分析">
+<meta property="og:url" content="wangzs.github.io/2016/05/01/ServiceManager进程处理事务请求/index.html">
+<meta property="og:site_name" content="千里之行码于足下">
+<meta property="og:description" content="ServiceManager事务处理逻辑分析主要涉及代码：service_managerbinder.hbinder.c内核中的binder.c">
+<meta property="og:updated_time" content="2016-05-07T16:17:29.462Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ServiceManager事务处理逻辑分析">
+<meta name="twitter:description" content="ServiceManager事务处理逻辑分析主要涉及代码：service_managerbinder.hbinder.c内核中的binder.c">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> ServiceManager事务处理逻辑分析 | 千里之行码于足下 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">千里之行码于足下</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">我是一只小小猿</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-libs">
+          <a href="/Libs" rel="section">
+            
+              <i class="menu-item-icon fa fa-gears fa-fw"></i> <br />
+            
+            Libs
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                ServiceManager事务处理逻辑分析
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-01T00:15:00+08:00" content="2016-05-01">
+              2016-05-01
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="ServiceManager事务处理逻辑分析"><a href="#ServiceManager事务处理逻辑分析" class="headerlink" title="ServiceManager事务处理逻辑分析"></a>ServiceManager事务处理逻辑分析</h1><p>主要涉及代码：<br><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/service_manager.c" target="_blank" rel="external">service_manager</a><br><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.h" target="_blank" rel="external">binder.h</a><br><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.c" target="_blank" rel="external">binder.c</a><br><a href="http://lxr.free-electrons.com/source/drivers/android/binder.c" target="_blank" rel="external">内核中的binder.c</a></p>
+<a id="more"></a>
+<p>ServiceManager处理事务都是在其进程执行binder_loop后：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">binder_loop</span><span class="params">(<span class="keyword">struct</span> binder_state *bs, binder_handler func)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> res;</div><div class="line">    <span class="keyword">struct</span> binder_write_read bwr;</div><div class="line">    <span class="keyword">uint32_t</span> readbuf[<span class="number">32</span>];</div><div class="line"></div><div class="line">    bwr.write_size = <span class="number">0</span>;</div><div class="line">    bwr.write_consumed = <span class="number">0</span>;</div><div class="line">    bwr.write_buffer = <span class="number">0</span>;</div><div class="line">    <span class="comment">// binder_write函数执行完BC_ENTER_LOOPER命令后，会对内核中的binder_thread类型的looper成员进行或运算</span></div><div class="line">    <span class="comment">//    thread-&gt;looper |= BINDER_LOOPER_STATE_ENTERED， 即调用完后就设置了thread-&gt;looper的状态</span></div><div class="line">    readbuf[<span class="number">0</span>] = BC_ENTER_LOOPER;                   <span class="comment">// ====&gt; 详见见下面binder驱动中BC_ENTER_LOOPER内的处理逻辑</span></div><div class="line">    binder_write(bs, readbuf, <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>));    <span class="comment">// ====&gt; 看binder_write函数定义（因read_size=0只会执行binder_thread_write）</span></div><div class="line">    <span class="comment">// service_manager进入无限循环</span></div><div class="line">    <span class="keyword">for</span> (;;) &#123;</div><div class="line">        bwr.read_size = <span class="keyword">sizeof</span>(readbuf);  <span class="comment">// 大小32</span></div><div class="line">        bwr.read_consumed = <span class="number">0</span>;</div><div class="line">        bwr.read_buffer = (<span class="keyword">uintptr_t</span>) readbuf;</div><div class="line">        <span class="comment">// 因write_size=0，故只会执行binder内核中的binder_thread_read函数</span></div><div class="line">        <span class="comment">//  无事务时会阻塞进入休眠状态</span></div><div class="line">        res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);   <span class="comment">// ====&gt; 此处的主要操作逻辑参见下面的binder_thread_read函数分析</span></div><div class="line"></div><div class="line">        <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"binder_loop: ioctl failed (%s)\n"</span>, strerror(errno));</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        res = binder_parse(bs, <span class="number">0</span>, (<span class="keyword">uintptr_t</span>) readbuf, bwr.read_consumed, func);</div><div class="line">        <span class="keyword">if</span> (res == <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"binder_loop: unexpected reply?!\n"</span>);</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">if</span> (res &lt; <span class="number">0</span>) &#123;</div><div class="line">            ALOGE(<span class="string">"binder_loop: io error %d %s\n"</span>, res, strerror(errno));</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>ServiceManager的事务都是由其它client向binder内核发出请求后，binder内核在处理完client的ioctl的请求后，唤醒ServiceManager在启动时进入睡眠的线程，继续执行<code>binder_thread_read</code>阻塞后面的代码。<br>ServiceManager需要处理的事务主要就是为client提供其它服务的binder的引用。</p>
+<p><code>binder_thread_read</code>函数的事务处理分析：<br>ServiceManager的todo列表中类型：</p>
+<ul>
+<li>addService时： BINDER_WORK_TRANSACTION</li>
+<li>getService时： </li>
+</ul>
+<h2 id="addService时功能分析"><a href="#addService时功能分析" class="headerlink" title="addService时功能分析"></a>addService时功能分析</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span> (<span class="number">1</span>) &#123;</div><div class="line">    ...</div><div class="line">    BUG_ON(t-&gt;buffer == <span class="literal">NULL</span>);</div><div class="line">    <span class="comment">// 1.注册服务时，该target_node即是ServiceManager的binder实体</span></div><div class="line">    <span class="keyword">if</span> (t-&gt;buffer-&gt;target_node) &#123;</div><div class="line">        <span class="comment">// 取出相应server在内核中的binder实体</span></div><div class="line">        <span class="keyword">struct</span> binder_node *target_node = t-&gt;buffer-&gt;target_node;</div><div class="line"></div><div class="line">        tr.target.ptr = target_node-&gt;ptr;</div><div class="line">        tr.cookie =  target_node-&gt;cookie;</div><div class="line">        t-&gt;saved_priority = task_nice(current);</div><div class="line">        <span class="keyword">if</span> (t-&gt;priority &lt; target_node-&gt;min_priority &amp;&amp;</div><div class="line">            !(t-&gt;flags &amp; TF_ONE_WAY))</div><div class="line">            binder_set_nice(t-&gt;priority);</div><div class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (!(t-&gt;flags &amp; TF_ONE_WAY) ||</div><div class="line">             t-&gt;saved_priority &gt; target_node-&gt;min_priority)</div><div class="line">            binder_set_nice(target_node-&gt;min_priority);</div><div class="line">        cmd = BR_TRANSACTION;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        tr.target.ptr = <span class="number">0</span>;</div><div class="line">        tr.cookie = <span class="number">0</span>;</div><div class="line">        cmd = BR_REPLY;</div><div class="line">    &#125;</div><div class="line">    tr.code = t-&gt;code;</div><div class="line">    tr.flags = t-&gt;flags;</div><div class="line">    tr.sender_euid = from_kuid(current_user_ns(), t-&gt;sender_euid);</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (t-&gt;from) &#123;</div><div class="line">        <span class="keyword">struct</span> task_struct *sender = t-&gt;from-&gt;proc-&gt;tsk;</div><div class="line"></div><div class="line">        tr.sender_pid = task_tgid_nr_ns(sender,</div><div class="line">                        task_active_pid_ns(current));</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        tr.sender_pid = <span class="number">0</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    tr.data_size = t-&gt;buffer-&gt;data_size;</div><div class="line">    tr.offsets_size = t-&gt;buffer-&gt;offsets_size;</div><div class="line">    tr.data.ptr.buffer = (<span class="keyword">binder_uintptr_t</span>)(</div><div class="line">                (<span class="keyword">uintptr_t</span>)t-&gt;buffer-&gt;data +</div><div class="line">                proc-&gt;user_buffer_offset);</div><div class="line">    tr.data.ptr.offsets = tr.data.ptr.buffer +</div><div class="line">                ALIGN(t-&gt;buffer-&gt;data_size,</div><div class="line">                    <span class="keyword">sizeof</span>(<span class="keyword">void</span> *));</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (put_user(cmd, (<span class="keyword">uint32_t</span> __user *)ptr))</div><div class="line">        <span class="keyword">return</span> -EFAULT;</div><div class="line">    ptr += <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>);</div><div class="line">    <span class="keyword">if</span> (copy_to_user(ptr, &amp;tr, <span class="keyword">sizeof</span>(tr)))</div><div class="line">        <span class="keyword">return</span> -EFAULT;</div><div class="line">    ptr += <span class="keyword">sizeof</span>(tr);</div><div class="line">    <span class="comment">// ====&gt; 注册服务时，上面部分就想到通过内核与ServiceManager的共享内存区域，将添加服务的事务数据传到了ServiceManager进程中</span></div><div class="line"></div><div class="line">    list_del(&amp;t-&gt;work.entry);</div><div class="line">    t-&gt;buffer-&gt;allow_user_free = <span class="number">1</span>;</div><div class="line">    <span class="keyword">if</span> (cmd == BR_TRANSACTION &amp;&amp; !(t-&gt;flags &amp; TF_ONE_WAY)) &#123;</div><div class="line">        <span class="comment">// 注册服务时，注册的服务进程需要注册这个事务执行结束的返回，所以此处将事务再挂在ServiceManager的事务堆栈中</span></div><div class="line">        t-&gt;to_parent = thread-&gt;transaction_stack;</div><div class="line">        t-&gt;to_thread = thread;</div><div class="line">        thread-&gt;transaction_stack = t;</div><div class="line">    &#125; <span class="keyword">else</span> &#123;</div><div class="line">        t-&gt;buffer-&gt;transaction = <span class="literal">NULL</span>;</div><div class="line">        kfree(t);</div><div class="line">        binder_stats_deleted(BINDER_STAT_TRANSACTION);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">break</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<ul>
+<li><p>注册服务的事务数据传到ServiceManager进程后，会进入ServiceManager的<code>binder_loop</code>中的<code>binder_parse</code>函数中：<br>addService时cmd为BR_TRANSACTION</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// </span></div><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_parse</span><span class="params">(<span class="keyword">struct</span> binder_state *bs, <span class="keyword">struct</span> binder_io *bio,</span></span></div><div class="line">                 <span class="keyword">uintptr_t</span> ptr, <span class="keyword">size_t</span> size, binder_handler func)</div><div class="line">&#123;</div><div class="line">    <span class="keyword">int</span> r = <span class="number">1</span>;</div><div class="line">    <span class="keyword">uintptr_t</span> end = ptr + (<span class="keyword">uintptr_t</span>) size;</div><div class="line"></div><div class="line">    <span class="keyword">while</span> (ptr &lt; end) &#123;</div><div class="line">        <span class="keyword">uint32_t</span> cmd = *(<span class="keyword">uint32_t</span> *) ptr;</div><div class="line">        ptr += <span class="keyword">sizeof</span>(<span class="keyword">uint32_t</span>);</div><div class="line"><span class="meta">#<span class="meta-keyword">if</span> TRACE</span></div><div class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"%s:\n"</span>, cmd_name(cmd));</div><div class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></div><div class="line">        <span class="keyword">switch</span>(cmd) &#123;</div><div class="line">        <span class="keyword">case</span> BR_NOOP:</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        <span class="keyword">case</span> BR_TRANSACTION_COMPLETE:</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        ...</div><div class="line">        <span class="keyword">case</span> BR_TRANSACTION: &#123;</div><div class="line">            <span class="keyword">struct</span> binder_transaction_data *txn = (<span class="keyword">struct</span> binder_transaction_data *) ptr;</div><div class="line">            <span class="keyword">if</span> ((end - ptr) &lt; <span class="keyword">sizeof</span>(*txn)) &#123;</div><div class="line">                ALOGE(<span class="string">"parse: txn too small!\n"</span>);</div><div class="line">                <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">            &#125;</div><div class="line">            binder_dump_txn(txn);</div><div class="line">            <span class="keyword">if</span> (func) &#123;</div><div class="line">                <span class="keyword">unsigned</span> rdata[<span class="number">256</span>/<span class="number">4</span>];</div><div class="line">                <span class="keyword">struct</span> binder_io msg;</div><div class="line">                <span class="keyword">struct</span> binder_io reply;</div><div class="line">                <span class="keyword">int</span> res;</div><div class="line"></div><div class="line">                bio_init(&amp;reply, rdata, <span class="keyword">sizeof</span>(rdata), <span class="number">4</span>);</div><div class="line">                bio_init_from_txn(&amp;msg, txn);   <span class="comment">// 将内核与ServiceManager的共享内存中数据msg拷贝到txn中</span></div><div class="line">                res = func(bs, txn, &amp;msg, &amp;reply);  <span class="comment">// func实际指向的是ServiceManager中的svcmgr_handler函数</span></div><div class="line">                binder_send_reply(bs, &amp;reply, txn-&gt;data.ptr.buffer, res); </div><div class="line">            &#125;</div><div class="line">            ptr += <span class="keyword">sizeof</span>(*txn);</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        &#125;</div><div class="line">        ...</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p>svcmgr_handler处理客户端的addService请求</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">svcmgr_handler</span><span class="params">(<span class="keyword">struct</span> binder_state *bs,</span></span></div><div class="line">                   <span class="keyword">struct</span> binder_transaction_data *txn,</div><div class="line">                   <span class="keyword">struct</span> binder_io *msg,</div><div class="line">                   <span class="keyword">struct</span> binder_io *reply)</div><div class="line">&#123;</div><div class="line">    <span class="keyword">struct</span> svcinfo *si;</div><div class="line">    <span class="keyword">uint16_t</span> *s;</div><div class="line">    <span class="keyword">size_t</span> len;</div><div class="line">    <span class="keyword">uint32_t</span> handle;</div><div class="line">    <span class="keyword">uint32_t</span> strict_policy;</div><div class="line">    <span class="keyword">int</span> allow_isolated;</div><div class="line">    <span class="keyword">if</span> (txn-&gt;target.ptr != BINDER_SERVICE_MANAGER)</div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (txn-&gt;code == PING_TRANSACTION)</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="comment">// Equivalent to Parcel::enforceInterface(), reading the RPC</span></div><div class="line">    <span class="comment">// header with the strict mode policy mask and the interface name.</span></div><div class="line">    <span class="comment">// Note that we ignore the strict_policy and don't propagate it</span></div><div class="line">    <span class="comment">// further (since we do no outbound RPCs anyway).</span></div><div class="line">    strict_policy = bio_get_uint32(msg);</div><div class="line">    s = bio_get_string16(msg, &amp;len);      <span class="comment">// "android.os.IServiceManager"</span></div><div class="line">    <span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// svcmgr_id等同"android.os.IServiceManager"</span></div><div class="line">    <span class="comment">// 其中sizeof(svcmgr_id) = 52  类型是16位的uint_16</span></div><div class="line">    <span class="keyword">if</span> ((len != (<span class="keyword">sizeof</span>(svcmgr_id) / <span class="number">2</span>)) ||</div><div class="line">        <span class="built_in">memcmp</span>(svcmgr_id, s, <span class="keyword">sizeof</span>(svcmgr_id))) &#123;</div><div class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"invalid id %s\n"</span>, str8(s, len));</div><div class="line">        <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// code对应了客户端调用的是ServiceManager的什么函数接口</span></div><div class="line">    <span class="keyword">switch</span>(txn-&gt;code) &#123;</div><div class="line">    <span class="keyword">case</span> SVC_MGR_GET_SERVICE:</div><div class="line">    <span class="keyword">case</span> SVC_MGR_CHECK_SERVICE:</div><div class="line">        s = bio_get_string16(msg, &amp;len);</div><div class="line">        <span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">        &#125;</div><div class="line">        handle = do_find_service(bs, s, len, txn-&gt;sender_euid, txn-&gt;sender_pid);</div><div class="line">        <span class="keyword">if</span> (!handle)</div><div class="line">            <span class="keyword">break</span>;</div><div class="line">        bio_put_ref(reply, handle);</div><div class="line">        <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line"></div><div class="line">    <span class="keyword">case</span> SVC_MGR_ADD_SERVICE: <span class="comment">// client调用了addService接口</span></div><div class="line">        s = bio_get_string16(msg, &amp;len);  <span class="comment">// 获取client传入的name</span></div><div class="line">        <span class="keyword">if</span> (s == <span class="literal">NULL</span>) &#123;</div><div class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">        &#125;</div><div class="line">        handle = bio_get_ref(msg);        <span class="comment">// 获取传入的client的服务的binder的handler</span></div><div class="line">        allow_isolated = bio_get_uint32(msg) ? <span class="number">1</span> : <span class="number">0</span>;</div><div class="line">        <span class="comment">// ====&gt; 添加服务到ServiceManager中的一个struct svcinfo链表结构类型成员svclist的首部</span></div><div class="line">        <span class="keyword">if</span> (do_add_service(bs, s, len, handle, txn-&gt;sender_euid,</div><div class="line">            allow_isolated, txn-&gt;sender_pid))</div><div class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</div><div class="line">        <span class="keyword">break</span>;</div><div class="line">        ...</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    bio_put_uint32(reply, <span class="number">0</span>);</div><div class="line">    <span class="keyword">return</span> <span class="number">0</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><strong> 添加完服务后，还要回到内核中清理addService中创建的事务相关对象的内存 </strong></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Binder/" rel="tag">#Binder</a>
+          
+            <a href="/tags/ServiceManager/" rel="tag">#ServiceManager</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/04/29/ServiceManager服务进程启动/" rel="next" title="ServiceManager服务的启动">
+                <i class="fa fa-chevron-left"></i> ServiceManager服务的启动
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/05/01/ServiceManager管理注册服务/" rel="prev" title="ServiceManager管理注册服务">
+                ServiceManager管理注册服务 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="wangzs" />
+          <p class="site-author-name" itemprop="name">wangzs</p>
+          <p class="site-description motion-element" itemprop="description">wangzs</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/wangzs" target="_blank">
+                  
+                    <i class="fa fa-github"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/volix" target="_blank">
+                  
+                    <i class="fa fa-weibo"></i> weibo
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#ServiceManager事务处理逻辑分析"><span class="nav-number">1.</span> <span class="nav-text">ServiceManager事务处理逻辑分析</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#addService时功能分析"><span class="nav-number">1.1.</span> <span class="nav-text">addService时功能分析</span></a></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzs</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+
+  
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/MathJax.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/config/TeX-AMS-MML_HTMLorMML.js"></script>
+  
+
+
+  
+
+
+</body>
+</html>

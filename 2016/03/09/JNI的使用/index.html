@@ -1,0 +1,980 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,JNI," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="Java Native Interface一、JNI简介1.1 JNI with C
+在Java类中使用C代码1234567891011121314public class HelloJNI &amp;#123; static &amp;#123;	 // 在运行时载入native库：Windows下为hello.dll 或者 Unixes下的libhello.so	 System.loadLibrary(&quot;he">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JNI使用方法">
+<meta property="og:url" content="wangzs.github.io/2016/03/09/JNI的使用/index.html">
+<meta property="og:site_name" content="千里之行码于足下">
+<meta property="og:description" content="Java Native Interface一、JNI简介1.1 JNI with C
+在Java类中使用C代码1234567891011121314public class HelloJNI &amp;#123; static &amp;#123;	 // 在运行时载入native库：Windows下为hello.dll 或者 Unixes下的libhello.so	 System.loadLibrary(&quot;he">
+<meta property="og:updated_time" content="2016-03-09T13:51:08.438Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="JNI使用方法">
+<meta name="twitter:description" content="Java Native Interface一、JNI简介1.1 JNI with C
+在Java类中使用C代码1234567891011121314public class HelloJNI &amp;#123; static &amp;#123;	 // 在运行时载入native库：Windows下为hello.dll 或者 Unixes下的libhello.so	 System.loadLibrary(&quot;he">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> JNI使用方法 | 千里之行码于足下 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">千里之行码于足下</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">我是一只小小猿</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-libs">
+          <a href="/Libs" rel="section">
+            
+              <i class="menu-item-icon fa fa-gears fa-fw"></i> <br />
+            
+            Libs
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                JNI使用方法
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-03-09T08:38:00+08:00" content="2016-03-09">
+              2016-03-09
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Java-Native-Interface"><a href="#Java-Native-Interface" class="headerlink" title="Java Native Interface"></a><a href="https://www3.ntu.edu.sg/home/ehchua/programming/java/JavaNativeInterface.html" target="_blank" rel="external">Java Native Interface</a></h1><h3 id="一、JNI简介"><a href="#一、JNI简介" class="headerlink" title="一、JNI简介"></a>一、JNI简介</h3><h4 id="1-1-JNI-with-C"><a href="#1-1-JNI-with-C" class="headerlink" title="1.1 JNI with C"></a>1.1 JNI with C</h4><ul>
+<li>在Java类中使用C代码<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloJNI</span> </span>&#123;</div><div class="line"> <span class="keyword">static</span> &#123;</div><div class="line">	 <span class="comment">// 在运行时载入native库：Windows下为hello.dll 或者 Unixes下的libhello.so</span></div><div class="line">	 System.loadLibrary(<span class="string">"hello"</span>);</div><div class="line"> &#125;</div><div class="line"> <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">helloWorld</span><span class="params">()</span></span>;</div><div class="line"> <span class="comment">// test</span></div><div class="line"> <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">	 <span class="keyword">new</span> HelloJNI().helloWorld();    <span class="comment">// 实际调用native的方法</span></div><div class="line"> &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 编译改java文件为对应的"HelloJNI.class"</span></div><div class="line">&gt; javac HelloJNI.java</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<a id="more"></a>
+<ul>
+<li>在C/C++层创建native的实际实现<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">// 先通过javah生产对应的C/C++头文件（注意调用javah时其所在的当前目录）</div><div class="line">&gt; javah HelloJNI</div><div class="line"></div><div class="line">/* DO NOT EDIT THIS FILE - it is machine generated */</div><div class="line">#include &lt;jni.h&gt;</div><div class="line">/* Header for class HelloJNI */</div><div class="line">#ifndef _Included_HelloJNI</div><div class="line">#define _Included_HelloJNI</div><div class="line">#ifdef __cplusplus</div><div class="line">extern "C" &#123;</div><div class="line">#endif</div><div class="line">/*</div><div class="line"> * Class:     HelloJNI</div><div class="line"> * Method:    helloWorld</div><div class="line"> * Signature: ()V</div><div class="line"> */</div><div class="line">JNIEXPORT void JNICALL Java_HelloJNI_helloWorld</div><div class="line">  (JNIEnv *, jobject);</div><div class="line"></div><div class="line">#ifdef __cplusplus</div><div class="line">&#125;</div><div class="line">#endif</div><div class="line">#endif</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>生产的C/C++头文件中的函数命名规则：<code>Java_{package_and_classname}_{function_name}(JNI arguments)</code></p>
+<h6 id="参数"><a href="#参数" class="headerlink" title="参数"></a>参数</h6><blockquote>
+<ul>
+<li>JNIEnv*: JNI环境的reference，通过它可以访问所有的JNI函数<ul>
+<li>jobject: java对象“this”的reference</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li>native的实现 - HelloJNI.c<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">#include &lt;jni.h&gt;</div><div class="line">#include &lt;stdio.h&gt;</div><div class="line">#include "HelloJNI.h"</div><div class="line"></div><div class="line">JNIEXPORT void JNICALL Java_HelloJNI_helloWorld(JNIEnv *, jobject) &#123;</div><div class="line">	printf("Say Hello world\n");</div><div class="line">	return;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h4 id="1-2-JNI-in-Package"><a href="#1-2-JNI-in-Package" class="headerlink" title="1.2 JNI in Package"></a>1.2 JNI in Package</h4><ul>
+<li><p>JNI的java - myjni\HelloJNI.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">package</span> myjni;		<span class="comment">// package name</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">HelloJNI</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">	  System.loadLibrary(<span class="string">"hello"</span>); <span class="comment">// hello.dll (Windows) or libhello.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line">   <span class="comment">// A native method that receives nothing and returns void</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">()</span></span>;</div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">	  <span class="keyword">new</span> HelloJNI().sayHello();  <span class="comment">// invoke the native method</span></div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 编译JNI代码</span></div><div class="line">&gt; javac myjni\HelloJNI.java</div></pre></td></tr></table></figure>
+</li>
+<li><p>生成C/C++的头文件</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">// 使用include会让生产的头文件输出路径在inlude目录下：include\myjni_HelloJNI.h</div><div class="line">&gt; javah <span class="_">-d</span> include myini.HelloJNI</div></pre></td></tr></table></figure>
+</li>
+<li><p>C中的实现 - HelloJNI.c</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">#include &lt;jni.h&gt;</div><div class="line">	#include &lt;stdio.h&gt;</div><div class="line">	#include "include\myjni_HelloJNI.h"</div><div class="line"></div><div class="line">	JNIEXPORT void JNICALL Java_myjni_HelloJNI_sayHello(JNIEnv *env, jobject thisObj) &#123;</div><div class="line">	   printf("Hello World!\n");</div><div class="line">	   return;</div><div class="line">	&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h3 id="二、JNI基础"><a href="#二、JNI基础" class="headerlink" title="二、JNI基础"></a>二、JNI基础</h3><h4 id="Java的基本类型对应关系"><a href="#Java的基本类型对应关系" class="headerlink" title="Java的基本类型对应关系"></a>Java的基本类型对应关系</h4><table>
+<thead>
+<tr>
+<th>Java类型</th>
+<th>JNI类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>int</td>
+<td>jint</td>
+</tr>
+<tr>
+<td>byte</td>
+<td>jbyte</td>
+</tr>
+<tr>
+<td>short</td>
+<td>jshort</td>
+</tr>
+<tr>
+<td>long</td>
+<td>jlong</td>
+</tr>
+<tr>
+<td>float</td>
+<td>jfloat</td>
+</tr>
+<tr>
+<td>double</td>
+<td>jdouble</td>
+</tr>
+<tr>
+<td>char</td>
+<td>jchar</td>
+</tr>
+<tr>
+<td>boolean</td>
+<td>jboolean</td>
+</tr>
+</tbody>
+</table>
+<h4 id="Java引用类型"><a href="#Java引用类型" class="headerlink" title="Java引用类型"></a>Java引用类型</h4><table>
+<thead>
+<tr>
+<th>Java类型</th>
+<th>JNI类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>java.lang.Object</td>
+<td>jobject</td>
+</tr>
+<tr>
+<td>java.lang.Class</td>
+<td>jclass</td>
+</tr>
+<tr>
+<td>java.lang.String</td>
+<td>jstring</td>
+</tr>
+<tr>
+<td>java.lang.Throwable</td>
+<td>jthrowable</td>
+</tr>
+<tr>
+<td>java array</td>
+<td>jarray</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Java数组是8个基本类型的数组和一个Object的数组的引用。因此有<code>jintArray</code>,<code>jbyteArray</code>,<code>jshortArray</code>,<code>jlongArray</code>,<code>jfloatArray</code>,<code>jdoubleArray</code>,<code>jcharArray</code>,<code>jbooleanArray</code>和Object的数组<code>jobjectArray</code></strong></p>
+<p>因为JNI中使用的类型如上所示，在C/C++原生的类型中使用的与此不同，所以需要在JNI类型和native类型之间进行转换。</p>
+<hr>
+<h3 id="三、Java和Native程序之间的参数传递和值返回"><a href="#三、Java和Native程序之间的参数传递和值返回" class="headerlink" title="三、Java和Native程序之间的参数传递和值返回"></a>三、Java和Native程序之间的参数传递和值返回</h3><h4 id="3-1-基本类型参数的传递"><a href="#3-1-基本类型参数的传递" class="headerlink" title="3.1 基本类型参数的传递"></a>3.1 基本类型参数的传递</h4><p>基本参数的类型直接与native中的基本类型对应，所以不需要做任何转换。<br><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">public class TestJNIPrimitive &#123;</div><div class="line">   static &#123;</div><div class="line">      System.loadLibrary("myjni"); // myjni.dll (Windows) or libmyjni.so (Unixes)</div><div class="line">   &#125;</div><div class="line">   // Declare a native method average() that receives two ints and return a double containing the average</div><div class="line">   private native double average(int n1, int n2);</div><div class="line">   // Test Driver</div><div class="line">   public static void main(String args[]) &#123;</div><div class="line">      System.out.println("In Java, the average is " + new TestJNIPrimitive().average(3, 2));</div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">// 生成native的头文件</div><div class="line">&gt; javac TestJNIPrimitive.java</div><div class="line">&gt; javah TestJNIPrimitive       // Output is TestJNIPrimitive.h</div><div class="line"></div><div class="line"></div><div class="line">// native的实现TestJNIPrimitive.c</div><div class="line">#include &lt;jni.h&gt;</div><div class="line">#include &lt;stdio.h&gt;</div><div class="line">#include "TestJNIPrimitive.h"</div><div class="line"></div><div class="line">JNIEXPORT jdouble JNICALL Java_TestJNIPrimitive_average</div><div class="line">          (JNIEnv *env, jobject thisObj, jint n1, jint n2) &#123;</div><div class="line">   jdouble result;</div><div class="line">   printf("In C, the numbers are %d and %d\n", n1, n2);</div><div class="line">   result = ((jdouble)n1 + n2) / 2.0;</div><div class="line">   // jint is mapped to int, jdouble is mapped to double</div><div class="line">   return result;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="3-2-String的传递"><a href="#3-2-String的传递" class="headerlink" title="3.2 String的传递"></a>3.2 String的传递</h4><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">public class TestJNIString &#123;</div><div class="line">   static &#123;</div><div class="line">      System.loadLibrary("myjni"); // myjni.dll (Windows) or libmyjni.so (Unixes)</div><div class="line">   &#125;</div><div class="line">   // Native method that receives a Java String and return a Java String</div><div class="line">   private native String sayHello(String msg);</div><div class="line"></div><div class="line">   public static void main(String args[]) &#123;</div><div class="line">      String result = new TestJNIString().sayHello("Hello from Java");</div><div class="line">      System.out.println("In Java, the returned string is: " + result);</div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">// 生成对应的native的头文件</div><div class="line">&gt; javac TestJNIString.java</div><div class="line">&gt; javah TestJNIString</div><div class="line"></div><div class="line">// 具体的native实现</div><div class="line">#include &lt;jni.h&gt;</div><div class="line">#include &lt;stdio.h&gt;</div><div class="line">#include "TestJNIString.h"</div><div class="line"></div><div class="line">JNIEXPORT jstring JNICALL Java_TestJNIString_sayHello(JNIEnv *env, jobject thisObj, jstring inJNIStr) &#123;</div><div class="line">   // Step 1: Convert the JNI String (jstring) into C-String (char*)</div><div class="line">   const char *inCStr = (*env)-&gt;GetStringUTFChars(env, inJNIStr, NULL);</div><div class="line">   if (NULL == inCSt) return NULL;</div><div class="line"></div><div class="line">   // Step 2: Perform its intended operations</div><div class="line">   printf("In C, the received string is: %s\n", inCStr);</div><div class="line">   (*env)-&gt;ReleaseStringUTFChars(env, inJNIStr, inCStr);  // release resources</div><div class="line"></div><div class="line">   // Prompt user for a C-string</div><div class="line">   char outCStr[128];</div><div class="line">   printf("Enter a String: ");</div><div class="line">   scanf("%s", outCStr);    // not more than 127 characters</div><div class="line"></div><div class="line">   // Step 3: Convert the C-string (char*) into JNI String (jstring) and return</div><div class="line">   return (*env)-&gt;NewStringUTF(env, outCStr);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>Java的String是一个object（参考类型），而C风格的字符串是以NULL结尾的char数组。所以需要在Java String（native中对应为jstring）和C-string（char*）之间转换。</p>
+<p>JNI的环境（通过JNIEnv*参数获取）提供相应的string的转换函数：</p>
+<ul>
+<li>jstring -&gt; c-string的调用方法为<code>const char* GetStringUTFChars(JNIEnv*, jstring, jboolean*)</code></li>
+<li>c-string -&gt; jstring的调用方法为<code>jstring NewStringUTF(JNIEnv*, char*)</code></li>
+</ul>
+<h6 id="JNI-Native-String-Functions"><a href="#JNI-Native-String-Functions" class="headerlink" title="JNI Native String Functions"></a>JNI Native String Functions</h6><p>JNI支持对Unicode（16-bit字符集）和UTF-8（1-3字节的编码）的strings。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// UTF-8 String (encoded to 1-3 byte, backward compatible with 7-bit ASCII)</span></div><div class="line"><span class="comment">// Can be mapped to null-terminated char-array C-string</span></div><div class="line"><span class="function"><span class="keyword">const</span> <span class="keyword">char</span> * <span class="title">GetStringUTFChars</span><span class="params">(JNIEnv *env, jstring <span class="built_in">string</span>, jboolean *isCopy)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Returns a pointer to an array of bytes representing the string in modified UTF-8 encoding.</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">ReleaseStringUTFChars</span><span class="params">(JNIEnv *env, jstring <span class="built_in">string</span>, <span class="keyword">const</span> <span class="keyword">char</span> *utf)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Informs the VM that the native code no longer needs access to utf.</span></div><div class="line"><span class="function">jstring <span class="title">NewStringUTF</span><span class="params">(JNIEnv *env, <span class="keyword">const</span> <span class="keyword">char</span> *bytes)</span></span>;</div><div class="line"><span class="comment">// Constructs a new java.lang.String object from an array of characters in modified UTF-8 encoding.</span></div><div class="line"><span class="function">jsize <span class="title">GetStringUTFLength</span><span class="params">(JNIEnv *env, jstring <span class="built_in">string</span>)</span></span>;</div><div class="line"><span class="comment">// Returns the length in bytes of the modified UTF-8 representation of a string.</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">GetStringUTFRegion</span><span class="params">(JNIEnv *env, jstring str, jsize start, jsize length, <span class="keyword">char</span> *buf)</span></span>;</div><div class="line"><span class="comment">// Translates len number of Unicode characters beginning at offset start into modified UTF-8 encoding</span></div><div class="line"><span class="comment">// and place the result in the given buffer buf.</span></div><div class="line"><span class="comment">// Unicode Strings (16-bit character)</span></div><div class="line"><span class="function"><span class="keyword">const</span> jchar * <span class="title">GetStringChars</span><span class="params">(JNIEnv *env, jstring <span class="built_in">string</span>, jboolean *isCopy)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Returns a pointer to the array of Unicode characters</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">ReleaseStringChars</span><span class="params">(JNIEnv *env, jstring <span class="built_in">string</span>, <span class="keyword">const</span> jchar *chars)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Informs the VM that the native code no longer needs access to chars.</span></div><div class="line"><span class="function">jstring <span class="title">NewString</span><span class="params">(JNIEnv *env, <span class="keyword">const</span> jchar *unicodeChars, jsize length)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Constructs a new java.lang.String object from an array of Unicode characters.</span></div><div class="line"><span class="function">jsize <span class="title">GetStringLength</span><span class="params">(JNIEnv *env, jstring <span class="built_in">string</span>)</span></span>;</div><div class="line"></div><div class="line"><span class="comment">// Returns the length (the count of Unicode characters) of a Java string.</span></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">GetStringRegion</span><span class="params">(JNIEnv *env, jstring str, jsize start, jsize length, jchar *buf)</span></span>;</div><div class="line"><span class="comment">// Copies len number of Unicode characters beginning at offset start to the given buffer buf</span></div></pre></td></tr></table></figure></p>
+<h6 id="UTF-8-strings-or-C-strings"><a href="#UTF-8-strings-or-C-strings" class="headerlink" title="UTF-8 strings or C-strings"></a>UTF-8 strings or C-strings</h6><p><code>GetStringUTFChars()</code>：</p>
+<blockquote>
+<ul>
+<li>通过Java’s jstring来创建一个C-string (char*)。该函数内存分配失败时会返回NULL。</li>
+<li>第三个参数isCopy (of jboolean*),表示返回值是否为原始java.lang.String实例的直接引用或者拷贝，大部分情况直接传NULL作为参数</li>
+<li>当不在使用<code>GetStringUTFChars()</code>函数返回的string时，调用<code>ReleaseStringUTFChars()</code>函数，释放内存与引用，使得可以被Java垃圾回收。</li>
+</ul>
+</blockquote>
+<p>在JDK 1.2中引入了<code>GetStringUTFRegion()</code>函数，该函数是需要自己提前分配c-string的内存，</p>
+<h6 id="【注】在C-中，使用env-gt-代替C中的-env-gt-，并且在C-函数中不需要传递JNIEnv-参数"><a href="#【注】在C-中，使用env-gt-代替C中的-env-gt-，并且在C-函数中不需要传递JNIEnv-参数" class="headerlink" title="【注】在C++中，使用env-&gt;代替C中的(*env)-&gt;，并且在C++函数中不需要传递JNIEnv*参数"></a>【注】在C++中，使用<code>env-&gt;</code>代替C中的<code>(*env)-&gt;</code>，并且在C++函数中不需要传递<code>JNIEnv*</code>参数</h6><h4 id="3-3-传递基本类型的数组"><a href="#3-3-传递基本类型的数组" class="headerlink" title="3.3 传递基本类型的数组"></a>3.3 传递基本类型的数组</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestJNIPrimitiveArray</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">      System.loadLibrary(<span class="string">"myjni"</span>); <span class="comment">// myjni.dll (Windows) or libmyjni.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// Declare a native method sumAndAverage() that receives an int[] and</span></div><div class="line">   <span class="comment">//  return a double[2] array with [0] as sum and [1] as average</span></div><div class="line">   <span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">double</span>[] sumAndAverage(<span class="keyword">int</span>[] numbers);</div><div class="line"></div><div class="line">   <span class="comment">// Test Driver</span></div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</div><div class="line">      <span class="keyword">int</span>[] numbers = &#123;<span class="number">22</span>, <span class="number">33</span>, <span class="number">33</span>&#125;;</div><div class="line">      <span class="keyword">double</span>[] results = <span class="keyword">new</span> TestJNIPrimitiveArray().sumAndAverage(numbers);</div><div class="line">      System.out.println(<span class="string">"In Java, the sum is "</span> + results[<span class="number">0</span>]);</div><div class="line">      System.out.println(<span class="string">"In Java, the average is "</span> + results[<span class="number">1</span>]);</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在JNI数组和native数组之间需要做转换。eg. jintArray与C的jint[].JNI环境接口（JNI Environment interface）提供了一系列函数用于转换。</p>
+<ul>
+<li>从JNI的jinArray到native的jint[]的转换：<code>jint* GetIntArrayElements(JNIEnv *env, jintArray a, jboolean *iscopy)</code></li>
+<li>从native的jint[]到JNI的jintArray的转换：首先调用<code>jintArray NewIntArray(JNIEnv *env, jsize len)</code>分配内存，在使用<code>void SetIntArrayRegion(JNIEnv *env, jintArray a, jsize start, jsize len, const jint *buf)</code>从jnit[]中拷贝数据到jintArray。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"TestJNIPrimitiveArray.h"</span></span></div><div class="line"><span class="function">JNIEXPORT jdoubleArray JNICALL <span class="title">Java_TestJNIPrimitiveArray_sumAndAverage</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj, jintArray inJNIArray)</span> &#123;</div><div class="line">   <span class="comment">// Step 1: Convert the incoming JNI jintarray to C's jint[]</span></div><div class="line">   jint *inCArray = (*env)-&gt;GetIntArrayElements(env, inJNIArray, <span class="literal">NULL</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == inCArray) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">   jsize length = (*env)-&gt;GetArrayLength(env, inJNIArray);</div><div class="line"></div><div class="line">   <span class="comment">// Step 2: Perform its intended operations</span></div><div class="line">   jint sum = <span class="number">0</span>;</div><div class="line">   <span class="keyword">int</span> i;</div><div class="line">   <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; length; i++) &#123;</div><div class="line">      sum += inCArray[i];</div><div class="line">   &#125;</div><div class="line">   jdouble average = (jdouble)sum / length;</div><div class="line">   (*env)-&gt;ReleaseIntArrayElements(env, inJNIArray, inCArray, <span class="number">0</span>); <span class="comment">// release resources</span></div><div class="line">   jdouble outCArray[] = &#123;sum, average&#125;;</div><div class="line"></div><div class="line">   <span class="comment">// Step 3: Convert the C's Native jdouble[] to JNI jdoublearray, and return</span></div><div class="line">   jdoubleArray outJNIArray = (*env)-&gt;NewDoubleArray(env, <span class="number">2</span>);  <span class="comment">// allocate</span></div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == outJNIArray) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">   (*env)-&gt;SetDoubleArrayRegion(env, outJNIArray, <span class="number">0</span> , <span class="number">2</span>, outCArray);  <span class="comment">// copy</span></div><div class="line">   <span class="keyword">return</span> outJNIArray;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h6 id="JNI-Primitive-Array-Functions"><a href="#JNI-Primitive-Array-Functions" class="headerlink" title="JNI Primitive Array Functions"></a>JNI Primitive Array Functions</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// ArrayType: jintArray, jbyteArray, jshortArray, jlongArray, jfloatArray, jdoubleArray, jcharArray, jbooleanArray</span></div><div class="line"><span class="comment">// PrimitiveType: int, byte, short, long, float, double, char, boolean</span></div><div class="line"><span class="comment">// NativeType: jint, jbyte, jshort, jlong, jfloat, jdouble, jchar, jboolean</span></div><div class="line">NativeType * Get&lt;PrimitiveType&gt;ArrayElements(JNIEnv *env, ArrayType <span class="built_in">array</span>, jboolean *isCopy);</div><div class="line"><span class="keyword">void</span> Release&lt;PrimitiveType&gt;ArrayElements(JNIEnv *env, ArrayType <span class="built_in">array</span>, NativeType *elems, jint mode);</div><div class="line"><span class="keyword">void</span> Get&lt;PrimitiveType&gt;ArrayRegion(JNIEnv *env, ArrayType <span class="built_in">array</span>, jsize start, jsize length, NativeType *buffer);</div><div class="line"><span class="keyword">void</span> Set&lt;PrimitiveType&gt;ArrayRegion(JNIEnv *env, ArrayType <span class="built_in">array</span>, jsize start, jsize length, <span class="keyword">const</span> NativeType *buffer);</div><div class="line">ArrayType New&lt;PrimitiveType&gt;Array(JNIEnv *env, jsize length);</div><div class="line"><span class="function"><span class="keyword">void</span> * <span class="title">GetPrimitiveArrayCritical</span><span class="params">(JNIEnv *env, jarray <span class="built_in">array</span>, jboolean *isCopy)</span></span>;</div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">ReleasePrimitiveArrayCritical</span><span class="params">(JNIEnv *env, jarray <span class="built_in">array</span>, <span class="keyword">void</span> *carray, jint mode)</span></span>;</div></pre></td></tr></table></figure>
+<hr>
+<h3 id="四、访问对象的变量和回调函数（C-中使用Java的变量和函数）"><a href="#四、访问对象的变量和回调函数（C-中使用Java的变量和函数）" class="headerlink" title="四、访问对象的变量和回调函数（C++中使用Java的变量和函数）"></a>四、访问对象的变量和回调函数（C++中使用Java的变量和函数）</h3><h4 id="4-1-访问对象的实例变量"><a href="#4-1-访问对象的实例变量" class="headerlink" title="4.1 访问对象的实例变量"></a>4.1 访问对象的实例变量</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestJNIInstanceVariable</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">      System.loadLibrary(<span class="string">"myjni"</span>); <span class="comment">// myjni.dll (Windows) or libmyjni.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// Instance variables</span></div><div class="line">   <span class="keyword">private</span> <span class="keyword">int</span> number = <span class="number">88</span>;</div><div class="line">   <span class="keyword">private</span> String message = <span class="string">"Hello from Java"</span>;</div><div class="line"></div><div class="line">   <span class="comment">// Declare a native method that modifies the instance variables</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">modifyInstanceVariable</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">   <span class="comment">// Test Driver</span></div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</div><div class="line">      TestJNIInstanceVariable test = <span class="keyword">new</span> TestJNIInstanceVariable();</div><div class="line">      test.modifyInstanceVariable();</div><div class="line">      System.out.println(<span class="string">"In Java, int is "</span> + test.number);</div><div class="line">      System.out.println(<span class="string">"In Java, String is "</span> + test.message);</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>修改class TestJNIInstanceVariable中的私有变量number和message的native代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"TestJNIInstanceVariable.h"</span></span></div><div class="line"></div><div class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL <span class="title">Java_TestJNIInstanceVariable_modifyInstanceVariable</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj)</span> &#123;</div><div class="line">   <span class="comment">// Get a reference to this object's class</span></div><div class="line">   jclass thisClass = (*env)-&gt;GetObjectClass(env, thisObj);</div><div class="line"></div><div class="line">   <span class="comment">// int</span></div><div class="line">   <span class="comment">// Get the Field ID of the instance variables "number"</span></div><div class="line">   jfieldID fidNumber = (*env)-&gt;GetFieldID(env, thisClass, <span class="string">"number"</span>, <span class="string">"I"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == fidNumber) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">   <span class="comment">// Get the int given the Field ID</span></div><div class="line">   jint number = (*env)-&gt;GetIntField(env, thisObj, fidNumber);</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, the int is %d\n"</span>, number);</div><div class="line"></div><div class="line">   <span class="comment">// Change the variable</span></div><div class="line">   number = <span class="number">99</span>;</div><div class="line">   (*env)-&gt;SetIntField(env, thisObj, fidNumber, number);</div><div class="line"></div><div class="line">   <span class="comment">// Get the Field ID of the instance variables "message"</span></div><div class="line">   jfieldID fidMessage = (*env)-&gt;GetFieldID(env, thisClass, <span class="string">"message"</span>, <span class="string">"Ljava/lang/String;"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == fidMessage) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">   <span class="comment">// String</span></div><div class="line">   <span class="comment">// Get the object given the Field ID</span></div><div class="line">   jstring message = (*env)-&gt;GetObjectField(env, thisObj, fidMessage);</div><div class="line"></div><div class="line">   <span class="comment">// Create a C-string with the JNI String</span></div><div class="line">   <span class="keyword">const</span> <span class="keyword">char</span> *cStr = (*env)-&gt;GetStringUTFChars(env, message, <span class="literal">NULL</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == cStr) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, the string is %s\n"</span>, cStr);</div><div class="line">   (*env)-&gt;ReleaseStringUTFChars(env, message, cStr);</div><div class="line"></div><div class="line">   <span class="comment">// Create a new C-string and assign to the JNI string</span></div><div class="line">   message = (*env)-&gt;NewStringUTF(env, <span class="string">"Hello from C"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == message) <span class="keyword">return</span>;</div><div class="line"></div><div class="line">   <span class="comment">// modify the instance variables</span></div><div class="line">   (*env)-&gt;SetObjectField(env, thisObj, fidMessage, message);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<ul>
+<li>通过<code>GetObjectClass()</code>获取object类的reference</li>
+<li>通过<code>GetFieldID()</code>从class的reference中获取变量的Filed ID，其中需要给函数提供变量的名字和它filed的描述(参考下面的表)。</li>
+<li>根据Field ID，使用<code>GetObjectField()</code>或者<code>Get&lt;primitive-type&gt;Field()</code>获取对应的实例变量</li>
+<li>根据Field Id，使用<code>SetObjectField()</code>或者<code>Set&lt;primitive-type&gt;Field()</code>可以更新对应的实例变量</li>
+</ul>
+</blockquote>
+<h6 id="Filed-Descriptor"><a href="#Filed-Descriptor" class="headerlink" title="Filed Descriptor"></a>Filed Descriptor</h6><table>
+<thead>
+<tr>
+<th>Java type</th>
+<th>Filed descriptor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean</td>
+<td>Z</td>
+</tr>
+<tr>
+<td>int</td>
+<td>I</td>
+</tr>
+<tr>
+<td>byte</td>
+<td>B</td>
+</tr>
+<tr>
+<td>char</td>
+<td>C</td>
+</tr>
+<tr>
+<td>short</td>
+<td>S</td>
+</tr>
+<tr>
+<td>float</td>
+<td>F</td>
+</tr>
+<tr>
+<td>double</td>
+<td>D</td>
+</tr>
+<tr>
+<td>Java class</td>
+<td><code>L&lt;fully-qualified-name&gt;;</code></td>
+</tr>
+<tr>
+<td>String</td>
+<td>Ljava/lang/String;</td>
+</tr>
+<tr>
+<td>Java array</td>
+<td><code>[&lt;descriptor&gt;</code></td>
+</tr>
+<tr>
+<td>Object[]</td>
+<td>[Ljava/lang/Object;</td>
+</tr>
+<tr>
+<td>int[]</td>
+<td>[I</td>
+</tr>
+</tbody>
+</table>
+<h6 id="JNI中accessing实例变量的函数"><a href="#JNI中accessing实例变量的函数" class="headerlink" title="JNI中accessing实例变量的函数"></a>JNI中accessing实例变量的函数</h6><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function">jclass <span class="title">GetObjectClass</span><span class="params">(JNIEnv *env, jobject obj)</span></span>;</div><div class="line"><span class="comment">// Returns the class of an object.</span></div><div class="line"></div><div class="line"><span class="function">jfieldID <span class="title">GetFieldID</span><span class="params">(JNIEnv *env, jclass cls, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> *sig)</span></span>;</div><div class="line"><span class="comment">// Returns the field ID for an instance variable of a class.</span></div><div class="line"></div><div class="line">NativeType Get&lt;type&gt;Field(JNIEnv *env, jobject obj, jfieldID fieldID);</div><div class="line"><span class="keyword">void</span> Set&lt;type&gt;Field(JNIEnv *env, jobject obj, jfieldID fieldID, NativeType value);</div><div class="line"><span class="comment">// Get/Set the value of an instance variable of an object</span></div><div class="line"><span class="comment">// &lt;type&gt; includes each of the eight primitive types plus Object.</span></div></pre></td></tr></table></figure>
+<h4 id="4-2-访问class的静态变量"><a href="#4-2-访问class的静态变量" class="headerlink" title="4.2 访问class的静态变量"></a>4.2 访问class的静态变量</h4><p>与4.1中访问普通变量差不多，只是使用的函数做一下修改使用：<br><code>GetStaticFieldID()</code>, <code>Get|SetStaticObjectField()</code>, <code>Get|SetStatic&lt;Primitive-type&gt;Field()</code><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="function">jfieldID <span class="title">GetStaticFieldID</span><span class="params">(JNIEnv *env, jclass cls, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> *sig)</span></span>;</div><div class="line"><span class="comment">// Returns the field ID for a static variable of a class.</span></div><div class="line"></div><div class="line">NativeType GetStatic&lt;type&gt;Field(JNIEnv *env, jclass clazz, jfieldID fieldID);</div><div class="line"><span class="keyword">void</span> SetStatic&lt;type&gt;Field(JNIEnv *env, jclass clazz, jfieldID fieldID, NativeType value);</div><div class="line"><span class="comment">// Get/Set the value of a static variable of a class.</span></div><div class="line"><span class="comment">// &lt;type&gt; includes each of the eight primitive types plus Object.</span></div></pre></td></tr></table></figure></p>
+<h4 id="4-3-回调实例的方法和静态方法"><a href="#4-3-回调实例的方法和静态方法" class="headerlink" title="4.3 回调实例的方法和静态方法"></a>4.3 回调实例的方法和静态方法</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestJNICallBackMethod</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">      System.loadLibrary(<span class="string">"myjni"</span>); <span class="comment">// myjni.dll (Windows) or libmyjni.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// Declare a native method that calls back the Java methods below</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> <span class="keyword">void</span> <span class="title">nativeMethod</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">   <span class="comment">// To be called back by the native code</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">callback</span><span class="params">()</span> </span>&#123;</div><div class="line">      System.out.println(<span class="string">"In Java"</span>);</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">callback</span><span class="params">(String message)</span> </span>&#123;</div><div class="line">      System.out.println(<span class="string">"In Java with "</span> + message);</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">double</span> <span class="title">callbackAverage</span><span class="params">(<span class="keyword">int</span> n1, <span class="keyword">int</span> n2)</span> </span>&#123;</div><div class="line">      <span class="keyword">return</span> ((<span class="keyword">double</span>)n1 + n2) / <span class="number">2.0</span>;</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// Static method to be called back</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> String <span class="title">callbackStatic</span><span class="params">()</span> </span>&#123;</div><div class="line">      <span class="keyword">return</span> <span class="string">"From static Java method"</span>;</div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// Test Driver</span></div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</div><div class="line">      <span class="keyword">new</span> TestJNICallBackMethod().nativeMethod();</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对应的native中的实现：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"TestJNICallBackMethod.h"</span></span></div><div class="line"><span class="function">JNIEXPORT <span class="keyword">void</span> JNICALL <span class="title">Java_TestJNICallBackMethod_nativeMethod</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj)</span> &#123;</div><div class="line"></div><div class="line">   <span class="comment">// Get a class reference for this object</span></div><div class="line">   jclass thisClass = (*env)-&gt;GetObjectClass(env, thisObj);</div><div class="line"></div><div class="line">   <span class="comment">// Get the Method ID for method "callback", which takes no arg and return void</span></div><div class="line">   jmethodID midCallBack = (*env)-&gt;GetMethodID(env, thisClass, <span class="string">"callback"</span>, <span class="string">"()V"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midCallBack) <span class="keyword">return</span>;</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, call back Java's callback()\n"</span>);</div><div class="line">   <span class="comment">// Call back the method (which returns void), baed on the Method ID</span></div><div class="line">   (*env)-&gt;CallVoidMethod(env, thisObj, midCallBack);</div><div class="line"></div><div class="line">   jmethodID midCallBackStr = (*env)-&gt;GetMethodID(env, thisClass,</div><div class="line">                               <span class="string">"callback"</span>, <span class="string">"(Ljava/lang/String;)V"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midCallBackStr) <span class="keyword">return</span>;</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, call back Java's called(String)\n"</span>);</div><div class="line">   jstring message = (*env)-&gt;NewStringUTF(env, <span class="string">"Hello from C"</span>);</div><div class="line">   (*env)-&gt;CallVoidMethod(env, thisObj, midCallBackStr, message);</div><div class="line"></div><div class="line">   jmethodID midCallBackAverage = (*env)-&gt;GetMethodID(env, thisClass,</div><div class="line">                                  <span class="string">"callbackAverage"</span>, <span class="string">"(II)D"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midCallBackAverage) <span class="keyword">return</span>;</div><div class="line">   jdouble average = (*env)-&gt;CallDoubleMethod(env, thisObj, midCallBackAverage, <span class="number">2</span>, <span class="number">3</span>);</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, the average is %f\n"</span>, average);</div><div class="line"></div><div class="line">   jmethodID midCallBackStatic = (*env)-&gt;GetStaticMethodID(env, thisClass,</div><div class="line">                                 <span class="string">"callbackStatic"</span>, <span class="string">"()Ljava/lang/String;"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midCallBackStatic) <span class="keyword">return</span>;</div><div class="line">   jstring resultJNIStr = (*env)-&gt;CallStaticObjectMethod(env, thisClass, midCallBackStatic);</div><div class="line">   <span class="keyword">const</span> <span class="keyword">char</span> *resultCStr = (*env)-&gt;GetStringUTFChars(env, resultJNIStr, <span class="literal">NULL</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == resultCStr) <span class="keyword">return</span>;</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, the returned string is %s\n"</span>, resultCStr);</div><div class="line">   (*env)-&gt;ReleaseStringUTFChars(env, resultJNIStr, resultCStr);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在native代码中调用java的函数的步骤：</p>
+<blockquote>
+<ul>
+<li>通过<code>GetObjectClass()</code>获取对象类的reference</li>
+<li>根据class reference调用<code>GetMethodID()</code>获取Method ID。需要提供函数的名称和参数类型的signature，signature的形式<code>(parameters)return-type</code>，具体怎么写参数类型的signature参考Filed descriptor表。可以通过使用<code>javah</code>工具来打印signature<figure class="highlight sh"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">&gt; javap --help</div><div class="line">&gt; javap <span class="_">-s</span> -p TestJNICallBackMethod</div><div class="line">  // <span class="_">-s</span> 表示打印出signature</div><div class="line">  // -p 表示显示private的成员</div><div class="line">  private void callback();</div><div class="line">	Signature: ()V</div><div class="line">  private void callback(java.lang.String);</div><div class="line">	Signature: (Ljava/lang/String;)V</div><div class="line">  private double callbackAverage(int, int);</div><div class="line">	Signature: (II)D</div><div class="line">  private static java.lang.String callbackStatic();</div><div class="line">	Signature: ()Ljava/lang/String;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li>根据Method ID，可以调用<code>Call&lt;Primitive-type&gt;Method()</code>、<code>CallVoidMethod()</code>或者<code>CallObjectMethod()</code>方法来调用实际的java函数（其中<code>&lt;Primitive-type&gt;</code>表示返回类型）。</li>
+</ul>
+<h6 id="JNI中调用普通方法和静态方法的函数有："><a href="#JNI中调用普通方法和静态方法的函数有：" class="headerlink" title="JNI中调用普通方法和静态方法的函数有："></a>JNI中调用普通方法和静态方法的函数有：</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="function">jmethodID <span class="title">GetMethodID</span><span class="params">(JNIEnv *env, jclass cls, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> *sig)</span></span>;</div><div class="line"><span class="comment">// Returns the method ID for an instance method of a class or interface.</span></div><div class="line"></div><div class="line">NativeType Call&lt;type&gt;Method(JNIEnv *env, jobject obj, jmethodID methodID, ...);</div><div class="line">NativeType Call&lt;type&gt;MethodA(JNIEnv *env, jobject obj, jmethodID methodID, <span class="keyword">const</span> jvalue *args);</div><div class="line">NativeType Call&lt;type&gt;MethodV(JNIEnv *env, jobject obj, jmethodID methodID, va_list args);</div><div class="line"><span class="comment">// Invoke an instance method of the object.</span></div><div class="line"><span class="comment">// The &lt;type&gt; includes each of the eight primitive and Object.</span></div><div class="line"></div><div class="line"><span class="function">jmethodID <span class="title">GetStaticMethodID</span><span class="params">(JNIEnv *env, jclass cls, <span class="keyword">const</span> <span class="keyword">char</span> *name, <span class="keyword">const</span> <span class="keyword">char</span> *sig)</span></span>;</div><div class="line"><span class="comment">// Returns the method ID for an instance method of a class or interface.</span></div><div class="line"></div><div class="line">NativeType CallStatic&lt;type&gt;Method(JNIEnv *env, jclass clazz, jmethodID methodID, ...);</div><div class="line">NativeType CallStatic&lt;type&gt;MethodA(JNIEnv *env, jclass clazz, jmethodID methodID, <span class="keyword">const</span> jvalue *args);</div><div class="line">NativeType CallStatic&lt;type&gt;MethodV(JNIEnv *env, jclass clazz, jmethodID methodID, va_list args);</div><div class="line"><span class="comment">// Invoke an instance method of the object.</span></div><div class="line"><span class="comment">// The &lt;type&gt; includes each of the eight primitive and Object.</span></div></pre></td></tr></table></figure>
+<h4 id="4-4-回调overriden父类的实例方法"><a href="#4-4-回调overriden父类的实例方法" class="headerlink" title="4.4 回调overriden父类的实例方法"></a>4.4 回调overriden父类的实例方法</h4><p>如果当前的class B继承于class A，现在想在native中调用父类A中的某个函数（该函数在子类B中已经复写）。<br>JNI提供了<code>CallNonvirtual&lt;Type&gt;Method()</code>函数来调用父类的函数（函数在子类中被继承了，类似于Java中在子类中调用csuper.methodName()来使用父类函数）。</p>
+<blockquote>
+<ul>
+<li>首先调用<code>GetMethodID()</code>获取Method Id</li>
+<li>根据Method ID， 调用<code>CallNonvirtual&lt;Type&gt;Method()</code>来使用父类函数，需要指定object、父类以及参数<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">NativeType CallNonvirtual&lt;type&gt;Method(JNIEnv *env, jobject obj, jclass cls, jmethodID methodID, ...);</div><div class="line">NativeType CallNonvirtual&lt;type&gt;MethodA(JNIEnv *env, jobject obj, jclass cls, jmethodID methodID, <span class="keyword">const</span> jvalue *args);</div><div class="line">NativeType CallNonvirtual&lt;type&gt;MethodV(JNIEnv *env, jobject obj, jclass cls, jmethodID methodID, va_list args);</div></pre></td></tr></table></figure>
+</li>
+</ul>
+</blockquote>
+<hr>
+<h3 id="五、创建Objects和Object数组"><a href="#五、创建Objects和Object数组" class="headerlink" title="五、创建Objects和Object数组"></a>五、创建Objects和Object数组</h3><p>我们可以调用<code>NewObject()</code>和<code>newObjectArray()</code>，在native代码中创建jobject和jobjectArray，然后传回到Java代码中。</p>
+<h4 id="5-1-在Native代码中调用构造器创建新的java对象"><a href="#5-1-在Native代码中调用构造器创建新的java对象" class="headerlink" title="5.1 在Native代码中调用构造器创建新的java对象"></a>5.1 在Native代码中调用构造器创建新的java对象</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestJNIConstructor</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">      System.loadLibrary(<span class="string">"myjni"</span>); <span class="comment">// myjni.dll (Windows) or libmyjni.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// Native method that calls back the constructor and return the constructed object.</span></div><div class="line">   <span class="comment">// Return an Integer object with the given int.</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> Integer <span class="title">getIntegerObject</span><span class="params">(<span class="keyword">int</span> number)</span></span>;</div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</div><div class="line">      TestJNIConstructor obj = <span class="keyword">new</span> TestJNIConstructor();</div><div class="line">      System.out.println(<span class="string">"In Java, the number is :"</span> + obj.getIntegerObject(<span class="number">9999</span>));</div><div class="line">   &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// getIntegerObject函数调用native来创建并返回Integer对象。</span></div></pre></td></tr></table></figure>
+<p>对应的Native代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"TestJNIConstructor.h"</span></span></div><div class="line"><span class="function">JNIEXPORT jobject JNICALL <span class="title">Java_TestJNIConstructor_getIntegerObject</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj, jint number)</span> &#123;</div><div class="line">   <span class="comment">// Get a class reference for java.lang.Integer</span></div><div class="line">   jclass cls = (*env)-&gt;FindClass(env, <span class="string">"java/lang/Integer"</span>);</div><div class="line"></div><div class="line">   <span class="comment">// Get the Method ID of the constructor which takes an int</span></div><div class="line">   jmethodID midInit = (*env)-&gt;GetMethodID(env, cls, <span class="string">"&lt;init&gt;"</span>, <span class="string">"(I)V"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midInit) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">   <span class="comment">// Call back constructor to allocate a new instance, with an int argument</span></div><div class="line">   jobject newObj = (*env)-&gt;NewObject(env, cls, midInit, number);</div><div class="line"></div><div class="line">   <span class="comment">// Try runnning the toString() on this newly create object</span></div><div class="line">   jmethodID midToString = (*env)-&gt;GetMethodID(env, cls, <span class="string">"toString"</span>, <span class="string">"()Ljava/lang/String;"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midToString) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">   jstring resultStr = (*env)-&gt;CallObjectMethod(env, newObj, midToString);</div><div class="line">   <span class="keyword">const</span> <span class="keyword">char</span> *resultCStr = (*env)-&gt;GetStringUTFChars(env, resultStr, <span class="literal">NULL</span>);</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C: the number is %s\n"</span>, resultCStr);</div><div class="line"></div><div class="line">   <span class="keyword">return</span> newObj;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h6 id="JNI中创建object的相关函数："><a href="#JNI中创建object的相关函数：" class="headerlink" title="JNI中创建object的相关函数："></a>JNI中创建object的相关函数：</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function">jclass <span class="title">FindClass</span><span class="params">(JNIEnv *env, <span class="keyword">const</span> <span class="keyword">char</span> *name)</span></span>;</div><div class="line"></div><div class="line"><span class="function">jobject <span class="title">NewObject</span><span class="params">(JNIEnv *env, jclass cls, jmethodID methodID, ...)</span></span>;</div><div class="line"><span class="function">jobject <span class="title">NewObjectA</span><span class="params">(JNIEnv *env, jclass cls, jmethodID methodID, <span class="keyword">const</span> jvalue *args)</span></span>;</div><div class="line"><span class="function">jobject <span class="title">NewObjectV</span><span class="params">(JNIEnv *env, jclass cls, jmethodID methodID, va_list args)</span></span>;</div><div class="line"><span class="comment">// Constructs a new Java object. The method ID indicates which constructor method to invoke</span></div><div class="line"></div><div class="line"><span class="function">jobject <span class="title">AllocObject</span><span class="params">(JNIEnv *env, jclass cls)</span></span>;</div><div class="line"><span class="comment">// Allocates a new Java object without invoking any of the constructors for the object.</span></div></pre></td></tr></table></figure>
+<h4 id="5-2-对象数组创建"><a href="#5-2-对象数组创建" class="headerlink" title="5.2 对象数组创建"></a>5.2 对象数组创建</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> java.util.ArrayList;</div><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestJNIObjectArray</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">      System.loadLibrary(<span class="string">"myjni"</span>); <span class="comment">// myjni.dll (Windows) or libmyjni.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line">   <span class="comment">// Native method that receives an Integer[] and</span></div><div class="line">   <span class="comment">//  returns a Double[2] with [0] as sum and [1] as average</span></div><div class="line">   <span class="keyword">private</span> <span class="keyword">native</span> Double[] sumAndAverage(Integer[] numbers);</div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</div><div class="line">      Integer[] numbers = &#123;<span class="number">11</span>, <span class="number">22</span>, <span class="number">32</span>&#125;;  <span class="comment">// auto-box</span></div><div class="line">      Double[] results = <span class="keyword">new</span> TestJNIObjectArray().sumAndAverage(numbers);</div><div class="line">      System.out.println(<span class="string">"In Java, the sum is "</span> + results[<span class="number">0</span>]);  <span class="comment">// auto-unbox</span></div><div class="line">      System.out.println(<span class="string">"In Java, the average is "</span> + results[<span class="number">1</span>]);</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对应的Native代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"TestJNIObjectArray.h"</span></span></div><div class="line"><span class="function">JNIEXPORT jobjectArray JNICALL <span class="title">Java_TestJNIObjectArray_sumAndAverage</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj, jobjectArray inJNIArray)</span> &#123;</div><div class="line">   <span class="comment">// Get a class reference for java.lang.Integer</span></div><div class="line">   jclass classInteger = (*env)-&gt;FindClass(env, <span class="string">"java/lang/Integer"</span>);</div><div class="line">   <span class="comment">// Use Integer.intValue() to retrieve the int</span></div><div class="line">   jmethodID midIntValue = (*env)-&gt;GetMethodID(env, classInteger, <span class="string">"intValue"</span>, <span class="string">"()I"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midIntValue) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line"></div><div class="line">   <span class="comment">// Get the value of each Integer object in the array</span></div><div class="line">   jsize length = (*env)-&gt;GetArrayLength(env, inJNIArray);</div><div class="line">   jint sum = <span class="number">0</span>;</div><div class="line">   <span class="keyword">int</span> i;</div><div class="line">   <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; length; i++) &#123;</div><div class="line">      jobject objInteger = (*env)-&gt;GetObjectArrayElement(env, inJNIArray, i);</div><div class="line">      <span class="keyword">if</span> (<span class="literal">NULL</span> == objInteger) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">      jint value = (*env)-&gt;CallIntMethod(env, objInteger, midIntValue);</div><div class="line">      sum += value;</div><div class="line">   &#125;</div><div class="line">   <span class="keyword">double</span> average = (<span class="keyword">double</span>)sum / length;</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, the sum is %d\n"</span>, sum);</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, the average is %f\n"</span>, average);</div><div class="line"></div><div class="line">   <span class="comment">// Get a class reference for java.lang.Double</span></div><div class="line">   jclass classDouble = (*env)-&gt;FindClass(env, <span class="string">"java/lang/Double"</span>);</div><div class="line"></div><div class="line">   <span class="comment">// Allocate a jobjectArray of 2 java.lang.Double</span></div><div class="line">   jobjectArray outJNIArray = (*env)-&gt;NewObjectArray(env, <span class="number">2</span>, classDouble, <span class="literal">NULL</span>);</div><div class="line"></div><div class="line">   <span class="comment">// Construct 2 Double objects by calling the constructor</span></div><div class="line">   jmethodID midDoubleInit = (*env)-&gt;GetMethodID(env, classDouble, <span class="string">"&lt;init&gt;"</span>, <span class="string">"(D)V"</span>);</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midDoubleInit) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line">   jobject objSum = (*env)-&gt;NewObject(env, classDouble, midDoubleInit, (<span class="keyword">double</span>)sum);</div><div class="line">   jobject objAve = (*env)-&gt;NewObject(env, classDouble, midDoubleInit, average);</div><div class="line">   <span class="comment">// Set to the jobjectArray</span></div><div class="line">   (*env)-&gt;SetObjectArrayElement(env, outJNIArray, <span class="number">0</span>, objSum);</div><div class="line">   (*env)-&gt;SetObjectArrayElement(env, outJNIArray, <span class="number">1</span>, objAve);</div><div class="line"></div><div class="line">   <span class="keyword">return</span> outJNIArray;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>与基本类型不同的是，对于对象数组，需要使用<code>Get|SetObjectArrayElement()</code>来处理每个元素。</p>
+<h6 id="JNI中创建和处理对象数组的函数："><a href="#JNI中创建和处理对象数组的函数：" class="headerlink" title="JNI中创建和处理对象数组的函数："></a>JNI中创建和处理对象数组的函数：</h6><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function">jobjectArray <span class="title">NewObjectArray</span><span class="params">(JNIEnv *env, jsize length, jclass elementClass, jobject initialElement)</span></span>;</div><div class="line"><span class="comment">// Constructs a new array holding objects in class elementClass.</span></div><div class="line"><span class="comment">// All elements are initially set to initialElement.</span></div><div class="line"></div><div class="line"><span class="function">jobject <span class="title">GetObjectArrayElement</span><span class="params">(JNIEnv *env, jobjectArray <span class="built_in">array</span>, jsize index)</span></span>;</div><div class="line"><span class="comment">// Returns an element of an Object array.</span></div><div class="line"></div><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">SetObjectArrayElement</span><span class="params">(JNIEnv *env, jobjectArray <span class="built_in">array</span>, jsize index, jobject value)</span></span>;</div><div class="line"><span class="comment">// Sets an element of an Object array.</span></div></pre></td></tr></table></figure>
+<hr>
+<h3 id="六、局部和全局引用"><a href="#六、局部和全局引用" class="headerlink" title="六、局部和全局引用"></a>六、局部和全局引用</h3><p>写高效的程序中管理references十分重要。如在native代码中使用FindClass(), GetMethodID(), GetFieldID()检索jclass, jmethodID和jfieldID。对于替代反复执行调用，这些值应该获取一次然后缓存起来供后面的使用。</p>
+<blockquote>
+<ul>
+<li>A local reference is created within the native method, and freed once the method exits. It is valid for the duration of a native method. You can also use JNI function DeleteLocalRef() to invalidate a local reference explicitly, so that it is available for garbage collection intermediately. Objects are passed to native methods as local references. All Java objects (jobject) returned by JNI functions are local references.</li>
+<li>A global reference remains until it is explicitly freed by the programmer, via the DeleteGlobalRef() JNI function. You can create a new global reference from a local reference via JNI function NewGlobalRef().</li>
+</ul>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestJNIReference</span> </span>&#123;</div><div class="line">   <span class="keyword">static</span> &#123;</div><div class="line">      System.loadLibrary(<span class="string">"myjni"</span>); <span class="comment">// myjni.dll (Windows) or libmyjni.so (Unixes)</span></div><div class="line">   &#125;</div><div class="line"></div><div class="line">   <span class="comment">// A native method that returns a java.lang.Integer with the given int.</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> Integer <span class="title">getIntegerObject</span><span class="params">(<span class="keyword">int</span> number)</span></span>;</div><div class="line"></div><div class="line">   <span class="comment">// Another native method that also returns a java.lang.Integer with the given int.</span></div><div class="line">   <span class="function"><span class="keyword">private</span> <span class="keyword">native</span> Integer <span class="title">anotherGetIntegerObject</span><span class="params">(<span class="keyword">int</span> number)</span></span>;</div><div class="line"></div><div class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</div><div class="line">      TestJNIReference test = <span class="keyword">new</span> TestJNIReference();</div><div class="line">      System.out.println(test.getIntegerObject(<span class="number">1</span>));</div><div class="line">      System.out.println(test.getIntegerObject(<span class="number">2</span>));</div><div class="line">      System.out.println(test.anotherGetIntegerObject(<span class="number">11</span>));</div><div class="line">      System.out.println(test.anotherGetIntegerObject(<span class="number">12</span>));</div><div class="line">      System.out.println(test.getIntegerObject(<span class="number">3</span>));</div><div class="line">      System.out.println(test.anotherGetIntegerObject(<span class="number">13</span>));</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对应的Native代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;jni.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></div><div class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"TestJNIReference.h"</span></span></div><div class="line"><span class="comment">// Global Reference to the Java class "java.lang.Integer"</span></div><div class="line"><span class="keyword">static</span> jclass classInteger;</div><div class="line"><span class="keyword">static</span> jmethodID midIntegerInit;</div><div class="line"></div><div class="line"><span class="function">jobject <span class="title">getInteger</span><span class="params">(JNIEnv *env, jobject thisObj, jint number)</span> </span>&#123;</div><div class="line"></div><div class="line">   <span class="comment">// Get a class reference for java.lang.Integer if missing</span></div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == classInteger) &#123;</div><div class="line">      <span class="built_in">printf</span>(<span class="string">"Find java.lang.Integer\n"</span>);</div><div class="line">      classInteger = (*env)-&gt;FindClass(env, <span class="string">"java/lang/Integer"</span>);</div><div class="line">   &#125;</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == classInteger) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line"></div><div class="line">   <span class="comment">// Get the Method ID of the Integer's constructor if missing</span></div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midIntegerInit) &#123;</div><div class="line">      <span class="built_in">printf</span>(<span class="string">"Get Method ID for java.lang.Integer's constructor\n"</span>);</div><div class="line">      midIntegerInit = (*env)-&gt;GetMethodID(env, classInteger, <span class="string">"&lt;init&gt;"</span>, <span class="string">"(I)V"</span>);</div><div class="line">   &#125;</div><div class="line">   <span class="keyword">if</span> (<span class="literal">NULL</span> == midIntegerInit) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line"></div><div class="line">   <span class="comment">// Call back constructor to allocate a new instance, with an int argument</span></div><div class="line">   jobject newObj = (*env)-&gt;NewObject(env, classInteger, midIntegerInit, number);</div><div class="line">   <span class="built_in">printf</span>(<span class="string">"In C, constructed java.lang.Integer with number %d\n"</span>, number);</div><div class="line">   <span class="keyword">return</span> newObj;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function">JNIEXPORT jobject JNICALL <span class="title">Java_TestJNIReference_getIntegerObject</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj, jint number)</span> &#123;</div><div class="line">   <span class="keyword">return</span> getInteger(env, thisObj, number);</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function">JNIEXPORT jobject JNICALL <span class="title">Java_TestJNIReference_anotherGetIntegerObject</span></span></div><div class="line">          <span class="params">(JNIEnv *env, jobject thisObj, jint number)</span> &#123;</div><div class="line">   <span class="keyword">return</span> getInteger(env, thisObj, number);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>上面的代码中会有问题，因为 FindClass()返回的是一个局部引用并赋值给<code>classInteger</code>这个全局变量，此次调用结束该局部引用就无效了，所以<code>classInteger</code>又成NULL了。<br>== 解决方法是根据FindClass的返回值来创建一个全局引用： ==<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Get a class reference for java.lang.Integer if missing</span></div><div class="line"><span class="keyword">if</span> (<span class="literal">NULL</span> == classInteger) &#123;</div><div class="line">  <span class="built_in">printf</span>(<span class="string">"Find java.lang.Integer\n"</span>);</div><div class="line">  <span class="comment">// FindClass returns a local reference</span></div><div class="line">  jclass classIntegerLocal = (*env)-&gt;FindClass(env, <span class="string">"java/lang/Integer"</span>);</div><div class="line">  <span class="comment">// Create a global reference from the local reference</span></div><div class="line">  classInteger = (*env)-&gt;NewGlobalRef(env, classIntegerLocal);</div><div class="line">  <span class="comment">// No longer need the local reference, free it!</span></div><div class="line">  (*env)-&gt;DeleteLocalRef(env, classIntegerLocal);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><strong>【注】jmethodID和jfieldID不是jobject，不能创建全局的reference</strong></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/JNI/" rel="tag">#JNI</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/03/08/hexo搭配github的个人页/" rel="next" title="Hexo配置博客">
+                <i class="fa fa-chevron-left"></i> Hexo配置博客
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/04/29/ServiceManager服务进程启动/" rel="prev" title="ServiceManager服务的启动">
+                ServiceManager服务的启动 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="wangzs" />
+          <p class="site-author-name" itemprop="name">wangzs</p>
+          <p class="site-description motion-element" itemprop="description">wangzs</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/wangzs" target="_blank">
+                  
+                    <i class="fa fa-github"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/volix" target="_blank">
+                  
+                    <i class="fa fa-weibo"></i> weibo
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Java-Native-Interface"><span class="nav-number">1.</span> <span class="nav-text">Java Native Interface</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、JNI简介"><span class="nav-number">1.0.1.</span> <span class="nav-text">一、JNI简介</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-1-JNI-with-C"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">1.1 JNI with C</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#参数"><span class="nav-number">1.0.1.1.0.1.</span> <span class="nav-text">参数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#1-2-JNI-in-Package"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">1.2 JNI in Package</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、JNI基础"><span class="nav-number">1.0.2.</span> <span class="nav-text">二、JNI基础</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Java的基本类型对应关系"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">Java的基本类型对应关系</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Java引用类型"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">Java引用类型</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、Java和Native程序之间的参数传递和值返回"><span class="nav-number">1.0.3.</span> <span class="nav-text">三、Java和Native程序之间的参数传递和值返回</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-基本类型参数的传递"><span class="nav-number">1.0.3.1.</span> <span class="nav-text">3.1 基本类型参数的传递</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-String的传递"><span class="nav-number">1.0.3.2.</span> <span class="nav-text">3.2 String的传递</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#JNI-Native-String-Functions"><span class="nav-number">1.0.3.2.0.1.</span> <span class="nav-text">JNI Native String Functions</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#UTF-8-strings-or-C-strings"><span class="nav-number">1.0.3.2.0.2.</span> <span class="nav-text">UTF-8 strings or C-strings</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#【注】在C-中，使用env-gt-代替C中的-env-gt-，并且在C-函数中不需要传递JNIEnv-参数"><span class="nav-number">1.0.3.2.0.3.</span> <span class="nav-text">【注】在C++中，使用env->代替C中的(*env)->，并且在C++函数中不需要传递JNIEnv*参数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-传递基本类型的数组"><span class="nav-number">1.0.3.3.</span> <span class="nav-text">3.3 传递基本类型的数组</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#JNI-Primitive-Array-Functions"><span class="nav-number">1.0.3.3.0.1.</span> <span class="nav-text">JNI Primitive Array Functions</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、访问对象的变量和回调函数（C-中使用Java的变量和函数）"><span class="nav-number">1.0.4.</span> <span class="nav-text">四、访问对象的变量和回调函数（C++中使用Java的变量和函数）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1-访问对象的实例变量"><span class="nav-number">1.0.4.1.</span> <span class="nav-text">4.1 访问对象的实例变量</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#Filed-Descriptor"><span class="nav-number">1.0.4.1.0.1.</span> <span class="nav-text">Filed Descriptor</span></a></li><li class="nav-item nav-level-6"><a class="nav-link" href="#JNI中accessing实例变量的函数"><span class="nav-number">1.0.4.1.0.2.</span> <span class="nav-text">JNI中accessing实例变量的函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2-访问class的静态变量"><span class="nav-number">1.0.4.2.</span> <span class="nav-text">4.2 访问class的静态变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3-回调实例的方法和静态方法"><span class="nav-number">1.0.4.3.</span> <span class="nav-text">4.3 回调实例的方法和静态方法</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#JNI中调用普通方法和静态方法的函数有："><span class="nav-number">1.0.4.3.0.1.</span> <span class="nav-text">JNI中调用普通方法和静态方法的函数有：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-4-回调overriden父类的实例方法"><span class="nav-number">1.0.4.4.</span> <span class="nav-text">4.4 回调overriden父类的实例方法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、创建Objects和Object数组"><span class="nav-number">1.0.5.</span> <span class="nav-text">五、创建Objects和Object数组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-1-在Native代码中调用构造器创建新的java对象"><span class="nav-number">1.0.5.1.</span> <span class="nav-text">5.1 在Native代码中调用构造器创建新的java对象</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#JNI中创建object的相关函数："><span class="nav-number">1.0.5.1.0.1.</span> <span class="nav-text">JNI中创建object的相关函数：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2-对象数组创建"><span class="nav-number">1.0.5.2.</span> <span class="nav-text">5.2 对象数组创建</span></a><ol class="nav-child"><li class="nav-item nav-level-6"><a class="nav-link" href="#JNI中创建和处理对象数组的函数："><span class="nav-number">1.0.5.2.0.1.</span> <span class="nav-text">JNI中创建和处理对象数组的函数：</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#六、局部和全局引用"><span class="nav-number">1.0.6.</span> <span class="nav-text">六、局部和全局引用</span></a></li></ol></li></ol></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzs</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+
+  
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/MathJax.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/config/TeX-AMS-MML_HTMLorMML.js"></script>
+  
+
+
+  
+
+
+</body>
+</html>

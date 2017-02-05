@@ -1,0 +1,822 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css"/>
+
+
+
+
+  <link href="//fonts.googleapis.com/css?family=Lato:300,400,700,400italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=0.5.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Android,Binder,ServiceManager," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=0.5.0" />
+
+
+
+
+
+
+<meta name="description" content="Java层获取Vibrator服务
+Vibrator systemService = (Vibrator) getSystemService(VIBRATOR_SERVICE);    // VIBRATOR_SERVICE=&amp;quot;vibrator&amp;quot;在Activity中调用时，实际调用的是Activity的getSystemService函数
+Activity的getSystemS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java层调用ServiceManager">
+<meta property="og:url" content="wangzs.github.io/2016/05/02/Java层getService的流程分析/index.html">
+<meta property="og:site_name" content="千里之行码于足下">
+<meta property="og:description" content="Java层获取Vibrator服务
+Vibrator systemService = (Vibrator) getSystemService(VIBRATOR_SERVICE);    // VIBRATOR_SERVICE=&amp;quot;vibrator&amp;quot;在Activity中调用时，实际调用的是Activity的getSystemService函数
+Activity的getSystemS">
+<meta property="og:updated_time" content="2016-05-14T13:22:57.773Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java层调用ServiceManager">
+<meta name="twitter:description" content="Java层获取Vibrator服务
+Vibrator systemService = (Vibrator) getSystemService(VIBRATOR_SERVICE);    // VIBRATOR_SERVICE=&amp;quot;vibrator&amp;quot;在Activity中调用时，实际调用的是Activity的getSystemService函数
+Activity的getSystemS">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"always"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
+    }
+  };
+</script>
+
+  <title> Java层调用ServiceManager | 千里之行码于足下 </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">千里之行码于足下</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle">我是一只小小猿</p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-home fa-fw"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-user fa-fw"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-archive fa-fw"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-tags fa-fw"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-libs">
+          <a href="/Libs" rel="section">
+            
+              <i class="menu-item-icon fa fa-gears fa-fw"></i> <br />
+            
+            Libs
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Java层调用ServiceManager
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-05-02T20:03:00+08:00" content="2016-05-02">
+              2016-05-02
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Java层获取Vibrator服务"><a href="#Java层获取Vibrator服务" class="headerlink" title="Java层获取Vibrator服务"></a>Java层获取Vibrator服务</h1><ol>
+<li><code>Vibrator systemService = (Vibrator) getSystemService(VIBRATOR_SERVICE);    // VIBRATOR_SERVICE=&quot;vibrator&quot;</code>在Activity中调用时，实际调用的是Activity的<code>getSystemService</code>函数</li>
+<li>Activity的<code>getSystemService</code>函数会调用到父类ContextThemeWrapper的<code>getSystemService</code>函数</li>
+<li>ContextThemeWrapper的<code>getSystemService</code>函数最终调用的是ContextWrapper的<code>getBaseContext</code>函数得到的Context中的<code>getSystemService</code>函数</li>
+<li>ContextWrapper的<code>getBaseContext</code>函数返回的Context是在其<code>attachBaseContext</code>函数内设置的，该函数在ContextThemeWrapper的<code>attachBaseContext</code>函数中调用，ContextThemeWrapper的<code>attachBaseContext</code>函数会在Activity的<code>attach</code>函数中被调用。</li>
+<li>Activity的<code>attach</code>函数实际又会在ActivityThread的<code>performLaunchActivity</code>中被执行。终于找到在ContextWrapper的<code>getBaseContext</code>函数得到的Context真正面目：<code>Context appContext = createBaseContextForActivity(r, activity);</code>  <a id="more"></a></li>
+<li><code>createBaseContextForActivity</code>第一个参数类型为<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ActivityThread.java#2216" target="_blank" rel="external">ActivityClientRecord</a>（此类型对象是在<code>startActivity</code>调用时创建的），这个函数创建的context实际是由ContextImpl类<code>createActivityContext</code>函数new了一个ContextImpl对象；</li>
+<li>ContextImpl类的<code>getSystemService</code>函数终于调用到了<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/SystemServiceRegistry.java" target="_blank" rel="external">SystemServiceRegistry</a>类的<code>getSystemService</code>函数了。</li>
+<li><code>getSystemService</code>函数通过名字key获取<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/SystemServiceRegistry.java" target="_blank" rel="external">SystemServiceRegistry</a>类的<code>SYSTEM_SERVICE_FETCHERS</code>（HashMap类型）成员的value，即获取<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/SystemServiceRegistry.java#753" target="_blank" rel="external">CachedServiceFetcher</a>类型对象，该对象将service缓存在<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/ContextImpl.java#mServiceCache" target="_blank" rel="external"><code>ContextImpl</code>中</a>。</li>
+<li>通过<code>getSystemService</code>函数得到的是<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/app/SystemServiceRegistry.java#460" target="_blank" rel="external">注册Vibrator服务</a>时缓存在<code>ContextImpl</code>的<code>mServiceCache</code>的相应的服务，即获取到实现了<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/Vibrator.java" target="_blank" rel="external"><code>Vibrator</code>接口</a>的<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/SystemVibrator.java#36" target="_blank" rel="external">SystemVibrator类</a>对象。</li>
+<li><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/SystemVibrator.java#36" target="_blank" rel="external">SystemVibrator类</a>对象的创建也就是通过ServiceManager获取vibrator服务的并赋值给其成员<code>IVibratorService mService</code>的过程，详细获取过程看下一节。</li>
+</ol>
+<h1 id="通过ServiceManager获取vibrator服务"><a href="#通过ServiceManager获取vibrator服务" class="headerlink" title="通过ServiceManager获取vibrator服务"></a>通过ServiceManager获取vibrator服务</h1><ul>
+<li>IServiceManager接口类：/frameworks/base/core/java/android/os/IServiceManager.java<br>提供接口：getService、checkService、addService、listServices、setPermissionController</li>
+</ul>
+<h2 id="ServiceManager管理类"><a href="#ServiceManager管理类" class="headerlink" title="ServiceManager管理类"></a>ServiceManager管理类</h2><p>位置：/frameworks/base/core/java/android/os/ServiceManager.java</p>
+<h3 id="根据service名获取对应服务"><a href="#根据service名获取对应服务" class="headerlink" title="根据service名获取对应服务"></a>根据service名获取对应服务</h3><p>其静态函数<code>getService(name)</code>函数获取指定name的service的引用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Returns a reference to a service with the given name.</div><div class="line"> * </div><div class="line"> * <span class="doctag">@param</span> name the name of the service to get</div><div class="line"> * <span class="doctag">@return</span> a reference to the service, or &lt;code&gt;null&lt;/code&gt; if the service doesn't exist</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> IBinder <span class="title">getService</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">    <span class="keyword">try</span> &#123;</div><div class="line">        IBinder service = sCache.get(name);</div><div class="line">        <span class="keyword">if</span> (service != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">return</span> service;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">return</span> getIServiceManager().getService(name);</div><div class="line">        &#125;</div><div class="line">    &#125; <span class="keyword">catch</span> (RemoteException e) &#123;</div><div class="line">        Log.e(TAG, <span class="string">"error in getService"</span>, e);</div><div class="line">    &#125;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>getIServiceManager</code>用来获取IServiceManager类型的成员变量，如果为nul则先赋值。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> IServiceManager <span class="title">getIServiceManager</span><span class="params">()</span> </span>&#123;</div><div class="line">    <span class="keyword">if</span> (sServiceManager != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> sServiceManager;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// Find the service manager</span></div><div class="line">    sServiceManager = ServiceManagerNative.asInterface(BinderInternal.getContextObject());</div><div class="line">    <span class="keyword">return</span> sServiceManager;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="获取ServiceManager的Binder代理"><a href="#获取ServiceManager的Binder代理" class="headerlink" title="获取ServiceManager的Binder代理"></a>获取ServiceManager的Binder代理</h4><p>其中BinderInternal.getContextObject()是一个native方法，获取系统全局的<code>context object</code>，即得到native层handle为0的BpBinder对象（就是ServiceManager在client端的Binder代理）</p>
+<blockquote>
+<ul>
+<li><p>Java位置：/frameworks/base/core/java/com/android/internal/os/BinderInternal.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">native</span> IBinder <span class="title">getContextObject</span><span class="params">()</span></span>;</div></pre></td></tr></table></figure>
+</li>
+<li><p>native位置：/frameworks/base/core/jni/android_util_Binder.cpp</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> jobject <span class="title">android_os_BinderInternal_getContextObject</span><span class="params">(JNIEnv* env, jobject clazz)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="comment">// 获取ServiceManager的BpBinder对象指针</span></div><div class="line">    sp&lt;IBinder&gt; b = ProcessState::self()-&gt;getContextObject(<span class="literal">NULL</span>);</div><div class="line">    <span class="keyword">return</span> javaObjectForIBinder(env, b);	<span class="comment">// 参见[如何将c/c++层获得到的BpBinder对象指针转为Java对象]</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><a href="#native_bpbinder_to_java">如何将c/c++层获得到的BpBinder对象指针转到Java层BinderProxy对象</a></p>
+</blockquote>
+<p><code>BinderInternal.getContextObject()</code>实际得到的是BinderProxy的对象，函数<code>ServiceManagerNative.asInterface(BinderInternal.getContextObject())</code>定义如下：<br>ServiceManagerNative类位置：<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/ServiceManagerNative.java" target="_blank" rel="external">/frameworks/base/core/java/android/os/ServiceManagerNative.java</a><br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/**</span></div><div class="line"> * Cast a Binder object into a service manager interface, generating</div><div class="line"> * a proxy if needed.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">public</span> IServiceManager <span class="title">asInterface</span><span class="params">(IBinder obj)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (obj == <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// obj为BinderProxy类型，其queryLocalInterface返回值为null</span></div><div class="line">    IServiceManager in =</div><div class="line">        (IServiceManager)obj.queryLocalInterface(descriptor);   <span class="comment">// descriptor = "android.os.IServiceManager";</span></div><div class="line">    <span class="keyword">if</span> (in != <span class="keyword">null</span>) &#123;</div><div class="line">        <span class="keyword">return</span> in;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ServiceManagerProxy(obj);    <span class="comment">// 以BinderProxy对象为参数创建一个ServiceManagerProxy对象</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>至此，<code>getIServiceManager()</code>函数终于得到了c/c++层的handle为0的ServiceManager的Binder引用<br>整个流程就是：Client的Java层想获取某个服务(<code>getService(name)</code>)，首先需要先获得ServiceManager的代理ServiceManagerProxy。<br>而ServiceManagerProxy是作为获取ServiceManager服务的Client的代理，该代理有个成员mRemote（类型实际为BinderProxy）指向了<br>c/c++层的handle为0的BpBinder对象。有了这个代理，Client就可以通过它向Binder驱动层发数据给ServiceManager进程了。</p>
+<h4 id="获取指定name的service"><a href="#获取指定name的service" class="headerlink" title="获取指定name的service"></a>获取指定name的service</h4><p>经由<code>getIServiceManager()</code>获取到了ServiceManager的代理ServiceManagerProxy类。以<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/SystemVibrator.java#36" target="_blank" rel="external">ServiceManager.getService(“vibrator”)</a>为例，调用<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/ServiceManagerNative.java#118" target="_blank" rel="external">ServiceManagerProxy的<code>getService</code>函数</a>分析：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 传入的name为"vibrator"</span></div><div class="line"><span class="function"><span class="keyword">public</span> IBinder <span class="title">getService</span><span class="params">(String name)</span> <span class="keyword">throws</span> RemoteException </span>&#123;</div><div class="line">        Parcel data = Parcel.obtain();</div><div class="line">        Parcel reply = Parcel.obtain();</div><div class="line">        data.writeInterfaceToken(IServiceManager.descriptor);</div><div class="line">        data.writeString(name);</div><div class="line">  		<span class="comment">// 通过binder内核传需要获取的服务的名字给ServiceManager</span></div><div class="line">  		<span class="comment">// GET_SERVICE_TRANSACTION最后会传到ServiceManager的svcmgr_handler处理函数中</span></div><div class="line">  		<span class="comment">// 	进而调用到实际的处理函数逻辑</span></div><div class="line">        mRemote.transact(GET_SERVICE_TRANSACTION, data, reply, <span class="number">0</span>);</div><div class="line">  		<span class="comment">// 获取到ServiceManager返回的对应name的服务的binder引用</span></div><div class="line">        IBinder binder = reply.readStrongBinder();</div><div class="line">        reply.recycle();</div><div class="line">        data.recycle();</div><div class="line">        <span class="keyword">return</span> binder;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>其中<code>mRemote.transact</code>实际调用到<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/Binder.java#501" target="_blank" rel="external"><code>transactNative</code>函数</a>，对应到native的函数是<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/jni/android_util_Binder.cpp#1083" target="_blank" rel="external"><code>android_os_BinderProxy_transact</code>函数</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">static</span> jboolean <span class="title">android_os_BinderProxy_transact</span><span class="params">(JNIEnv* env, jobject obj,</span></span></div><div class="line">        jint code, jobject dataObj, jobject replyObj, jint flags) <span class="comment">// throws RemoteException</span></div><div class="line">&#123;</div><div class="line">  <span class="comment">// 将java层的Parcel类型对象转成native层的Parcel对象</span></div><div class="line">  Parcel* data = parcelForJavaObject(env, dataObj);</div><div class="line">  Parcel* reply = parcelForJavaObject(env, replyObj);</div><div class="line">  <span class="comment">// gBinderProxyOffsets结构体中fieldId对应到了Java层BinderProxy类中成员</span></div><div class="line">  <span class="comment">// 即此处得到了ServiceManager的client端的代理binder（实际类型为BpBinder）</span></div><div class="line">   IBinder* target = (IBinder*)</div><div class="line">        env-&gt;GetLongField(obj, gBinderProxyOffsets.mObject);</div><div class="line">  <span class="comment">// 调用到BpBinder类中的transact函数</span></div><div class="line">   <span class="keyword">status_t</span> err = target-&gt;transact(code, *data, reply, flags);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>调用到的<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/BpBinder.cpp#159" target="_blank" rel="external">BpBinder的transact函数</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> BpBinder::transact(</div><div class="line">    <span class="keyword">uint32_t</span> code, <span class="keyword">const</span> Parcel&amp; data, Parcel* reply, <span class="keyword">uint32_t</span> flags)</div><div class="line">&#123;</div><div class="line">   <span class="comment">// mHandle为0 code为GET_SERVICE_TRANSACTION</span></div><div class="line">   <span class="keyword">status_t</span> status = IPCThreadState::self()-&gt;transact(</div><div class="line">            mHandle, code, data, reply, flags);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>调用到<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#548" target="_blank" rel="external">IPCThreadState类中的transact函数</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> IPCThreadState::transact(<span class="keyword">int32_t</span> handle,</div><div class="line">                                  <span class="keyword">uint32_t</span> code, <span class="keyword">const</span> Parcel&amp; data,</div><div class="line">                                  Parcel* reply, <span class="keyword">uint32_t</span> flags)</div><div class="line">&#123;</div><div class="line">   <span class="comment">// 将需要传到ServiceManager进程的数据包裹为binder驱动可解析的数据格式</span></div><div class="line">   <span class="comment">// 此处包裹了的BC_TRANSACTION会在binder内核的binder_thread_write时解析</span></div><div class="line">   err = writeTransactionData(BC_TRANSACTION, flags, handle, code, data, <span class="literal">NULL</span>);</div><div class="line">   <span class="comment">// 将包裹后获取服务的数据发到binder驱动层，并等待ServiceManager进程传回获取服务的返回值</span></div><div class="line">   <span class="comment">// 在waitForResponse内的talkWithDriver函数中，会调用ioctl，传入到内核的binder_ioctl函数</span></div><div class="line">   <span class="comment">//    中的cmd为BINDER_WRITE_READ</span></div><div class="line">   err = waitForResponse(reply);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中调用到的<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#712" target="_blank" rel="external"><code>waitForResponse</code>函数</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> IPCThreadState::waitForResponse(Parcel *reply, <span class="keyword">status_t</span> *acquireResult)</div><div class="line">&#123;</div><div class="line">   <span class="keyword">while</span> (<span class="number">1</span>) &#123;</div><div class="line">     	<span class="comment">// talkWithDriver调用后会进入到内核中处理</span></div><div class="line">        <span class="keyword">if</span> ((err=talkWithDriver()) &lt; NO_ERROR) <span class="keyword">break</span>;</div><div class="line">     	<span class="comment">// 读出了在bidner内核设置的BR_TRANSACTION_COMPLETE</span></div><div class="line">        cmd = (<span class="keyword">uint32_t</span>)mIn.readInt32();</div><div class="line">     	<span class="keyword">switch</span> (cmd) &#123;</div><div class="line">            <span class="keyword">case</span> BR_TRANSACTION_COMPLETE:</div><div class="line">            	<span class="keyword">if</span> (!reply &amp;&amp; !acquireResult) <span class="keyword">goto</span> finish;</div><div class="line">            	<span class="keyword">break</span>;</div><div class="line">            ...</div><div class="line">        &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中调用到的<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#talkWithDriver" target="_blank" rel="external"><code>talkWithDriver</code>函数</a>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> IPCThreadState::talkWithDriver(<span class="keyword">bool</span> doReceive)</div><div class="line">&#123;</div><div class="line">  <span class="comment">// bwr用于用户空间和内核空间数据交换</span></div><div class="line">  binder_write_read bwr;</div><div class="line">  <span class="comment">// 接着设置bwr ...</span></div><div class="line">  <span class="comment">// 进入到binder驱动的binder_ioctl，进入后首先需要将用户空间数据拷贝到binder内核中</span></div><div class="line">  <span class="keyword">if</span> (ioctl(mProcess-&gt;mDriverFD, BINDER_WRITE_READ, &amp;bwr) &gt;= <span class="number">0</span>)</div><div class="line">      err = NO_ERROR;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>进入到内核<code>binder_ioctl</code>函数后，首先会拷贝用户空间数据到内核空间（该内核空间在ServiceManager进程启动时做了内存映射），接着会进入<code>binder_thread_write</code>函数对用户空间传过来的数据（包裹着BC_TRANSACTION命令数据）做处理；处理完后会进入<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>，写入需要返回给用户空间请求的服务的Binder引用。</p>
+<ul>
+<li><code>binder_thread_write</code>函数中主要工作：创建一个类型为<code>BINDER_WORK_TRANSACTION</code>事务（就是到ServiceManager进程调用getService获取指定服务的事务）添加到ServiceManager的todo列表中，并唤醒ServiceManager，处理刚刚创建的这个事务；创建一个类型为<code>BINDER_WORK_TRANSACTION_COMPLATE</code>事务添加到client调用<code>getService</code>所在线程的todo列表中；</li>
+<li>进入到<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>，会对上面创建的类型为<code>BINDER_WORK_TRANSACTION_COMPLATE</code>的事务进行处理，会传回cmd为<code>BR_TRANSACTION_COMPLETE</code>到用户空间，这时事务处理完，释放事务所占用的内存；</li>
+<li>回到<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#712" target="_blank" rel="external"><code>waitForResponse</code>函数</a>内，读出内核中设置的<code>BR_TRANSACTION_COMPLETE</code>值，进入相应的case，因为需要有返回reply，所以继续在<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#712" target="_blank" rel="external"><code>waitForResponse</code>函数</a>内，执行<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#talkWithDriver" target="_blank" rel="external"><code>talkWithDriver</code>函数</a> ；</li>
+<li>再次执行<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#talkWithDriver" target="_blank" rel="external"><code>talkWithDriver</code>函数</a>进入内核，此时因用户空间没有数据传入，不会进入到<code>binder_thread_write</code>中，因需要返回值，进入到<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>中；</li>
+<li>进入到<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>，如果此时ServiceManager已经处理完前面提交的事务，则此次就有事务处理了；如果ServiceManager未处理完上次的事务，此client线程会进入休眠状态，等待ServiceManager处理完事务唤醒；</li>
+<li>ServiceManager处理完getService的事务后，也会提交一个类型为<code>BINDER_WORK_TRANSACTION</code>的事务给client处理。</li>
+</ul>
+<h5 id="ServiceManager唤醒处理BINDER-WORK-TRANSACTION类型事务"><a href="#ServiceManager唤醒处理BINDER-WORK-TRANSACTION类型事务" class="headerlink" title="ServiceManager唤醒处理BINDER_WORK_TRANSACTION类型事务"></a>ServiceManager唤醒处理BINDER_WORK_TRANSACTION类型事务</h5><p>ServiceManager工作线程也是在<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>中休眠，等待被唤醒处理新的事务。</p>
+<p>上面的client在进入到<code>binder_thread_write</code>函数后提交了一个类型为<code>BINDER_WORK_TRANSACTION</code>事务，并唤醒了ServiceManager工作线程，ServiceManager继续执行<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>后面的代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">case</span> BINDER_WORK_TRANSACTION: &#123;</div><div class="line">  <span class="comment">// 取出client提交的getService的事务</span></div><div class="line">  t = container_of(w, <span class="keyword">struct</span> binder_transaction, work);      </div><div class="line">&#125; <span class="keyword">break</span>;</div><div class="line"></div><div class="line"><span class="comment">// 此处的target_node是在client创建事务（binder_transaction函数内）时设置，</span></div><div class="line"><span class="comment">//  其值为binder_context_mgr_node</span></div><div class="line"><span class="keyword">if</span> (t-&gt;buffer-&gt;target_node) &#123;	</div><div class="line">  cmd = BR_TRANSACTION;</div><div class="line">&#125;</div><div class="line"><span class="comment">//  1. 将用户空间传到binder内核中的数据再传到ServiceManager内存中</span></div><div class="line"><span class="comment">//		（内存映射，不同于用户-&gt;binder内核的数据拷贝）</span></div><div class="line"><span class="comment">//  2. 将事务从todo列表中移除，但将该事务赋值给ServiceManager线程的transaction_stack，</span></div><div class="line"><span class="comment">//		等待后面ServiceManager对该事务实际的处理</span></div><div class="line">list_del(&amp;t-&gt;work.entry);</div><div class="line"><span class="keyword">if</span> (cmd == BR_TRANSACTION &amp;&amp; !(t-&gt;flags &amp; TF_ONE_WAY)) &#123;</div><div class="line">	thread-&gt;transaction_stack = t;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>ServiceManager执行完<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>后，回到其<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.c#390" target="_blank" rel="external"><code>binder_loop</code>函数</a>中，继续后面的执行代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">void</span> <span class="title">binder_loop</span><span class="params">(<span class="keyword">struct</span> binder_state *bs, binder_handler func)</span></span></div><div class="line">&#123;</div><div class="line">   <span class="keyword">for</span> (;;) &#123;</div><div class="line">   	 res = ioctl(bs-&gt;fd, BINDER_WRITE_READ, &amp;bwr);</div><div class="line">     <span class="comment">// 解析binder_thread_read拷贝过来的数据（处理client的getService请求）</span></div><div class="line">     res = binder_parse(bs, <span class="number">0</span>, (<span class="keyword">uintptr_t</span>) readbuf, bwr.read_consumed, func);</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>进入<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.c#binder_parse" target="_blank" rel="external"><code>binder_parse</code>函数</a>解析传过来的client请求数据：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">binder_parse</span><span class="params">(<span class="keyword">struct</span> binder_state *bs, <span class="keyword">struct</span> binder_io *bio,</span></span></div><div class="line">                 <span class="keyword">uintptr_t</span> ptr, <span class="keyword">size_t</span> size, binder_handler func)</div><div class="line">&#123;</div><div class="line">  <span class="keyword">case</span> BR_TRANSACTION: &#123;</div><div class="line">    <span class="keyword">struct</span> binder_transaction_data *txn = (<span class="keyword">struct</span> binder_transaction_data *) ptr;</div><div class="line">    <span class="comment">// 一些初始化操作</span></div><div class="line">    bio_init(&amp;reply, rdata, <span class="keyword">sizeof</span>(rdata), <span class="number">4</span>);</div><div class="line">    bio_init_from_txn(&amp;msg, txn);</div><div class="line">    <span class="comment">// 调用实际的处理client的getService请求的函数，func函数指针指向的是svcmgr_handler函数</span></div><div class="line">    res = func(bs, txn, &amp;msg, &amp;reply);</div><div class="line">    <span class="comment">// 传回getService得到结果给client</span></div><div class="line">    binder_send_reply(bs, &amp;reply, txn-&gt;data.ptr.buffer, res);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/service_manager.c#svcmgr_handler" target="_blank" rel="external"><code>svcmgr_handler</code>函数</a>处理逻辑：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">int</span> <span class="title">svcmgr_handler</span><span class="params">(<span class="keyword">struct</span> binder_state *bs,</span></span></div><div class="line">                   <span class="keyword">struct</span> binder_transaction_data *txn,</div><div class="line">                   <span class="keyword">struct</span> binder_io *msg,</div><div class="line">                   <span class="keyword">struct</span> binder_io *reply)</div><div class="line">&#123;</div><div class="line">   <span class="keyword">case</span> SVC_MGR_GET_SERVICE:</div><div class="line">   <span class="keyword">case</span> SVC_MGR_CHECK_SERVICE:</div><div class="line">  	<span class="comment">// 获取对应name的service的handle（相应service启动时注册到ServiceManager中的）</span></div><div class="line">  	<span class="comment">// 	从svclist链表中找到对应的服务的handle</span></div><div class="line">   	handle = do_find_service(bs, s, len, txn-&gt;sender_euid, txn-&gt;sender_pid);</div><div class="line">  	<span class="comment">// 写到reply中，用于后面binder_send_reply函数传回到client端</span></div><div class="line">  	bio_put_ref(reply, handle);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.c#170" target="_blank" rel="external"><code>binder_send_reply</code>函数</a>将ServiceManager取到的service的handle经过binder内核传回到client（唤醒睡眠中的client线程继续执行<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>）。</p>
+<ol>
+<li>ServiceManager传回handle过程中，也会创建一个<code>BINDER_WORK_TRANSACTION</code>事务和一个<code>BINDER_WORK_TRANSACTION_COMPLETE</code>事务，前一个事务添加给client thread的todo列表中，后一个事务是ServiceManager自己处理完了此处<code>getService</code>请求后内核的一些收尾清理，然后ServiceManager进入loop，没有事务处理的情况下，继续进入休眠状态；</li>
+<li>ServiceManager创建<code>BINDER_WORK_TRANSACTION</code>事务时，因在<code>binder_transaction</code>函数调用时reply为true，所以事务中的<code>target_node</code>为NULL；</li>
+<li>添加完相应的事务后，会唤醒client睡眠的线程，处理ServiceManager的函数<code>getService</code>返回;</li>
+<li>client线程唤醒后，执行<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>将得到的handle传回用户空间，因上面创建<code>BINDER_WORK_TRANSACTION</code>事务的target为NULL，<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/cmds/servicemanager/binder.c#170" target="_blank" rel="external">此处</a>设置的cmd为<code>BR_REPLY</code>;</li>
+</ol>
+<p>client执行完<a href="http://lxr.free-electrons.com/source/drivers/android/binder.c#L2142" target="_blank" rel="external"><code>binder_thread_read</code>函数</a>后回到<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/IPCThreadState.cpp#712" target="_blank" rel="external"><code>waitForResponse</code>函数</a>内：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> IPCThreadState::waitForResponse(Parcel *reply, <span class="keyword">status_t</span> *acquireResult)</div><div class="line">&#123;</div><div class="line">   <span class="keyword">while</span> (<span class="number">1</span>) &#123;</div><div class="line">   	<span class="keyword">if</span> ((err=talkWithDriver()) &lt; NO_ERROR) <span class="keyword">break</span>;</div><div class="line">   	<span class="comment">// 读出的cmd为BR_REPLY</span></div><div class="line">    cmd = (<span class="keyword">uint32_t</span>)mIn.readInt32();</div><div class="line">    <span class="keyword">case</span> BR_REPLY: &#123;</div><div class="line">      <span class="comment">// 读出binder内核传来的getService结果handle值存放到Parcel类的mObjects中</span></div><div class="line">      reply-&gt;ipcSetDataReference(</div><div class="line">        <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> <span class="keyword">uint8_t</span>*&gt;(tr.data.ptr.buffer),</div><div class="line">        tr.data_size,</div><div class="line">        <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">const</span> <span class="keyword">binder_size_t</span>*&gt;(tr.data.ptr.offsets),</div><div class="line">        tr.offsets_size/<span class="keyword">sizeof</span>(<span class="keyword">binder_size_t</span>),</div><div class="line">        freeBuffer, <span class="keyword">this</span>);</div><div class="line">    &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>此时，<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Parcel.cpp#1573" target="_blank" rel="external">Parcel类</a>对象就有了这个服务的handle了。我们回到<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/ServiceManagerNative.java#118" target="_blank" rel="external">ServiceManagerProxy的<code>getService</code>函数</a>中：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 传入的name为"vibrator"</span></div><div class="line"><span class="function"><span class="keyword">public</span> IBinder <span class="title">getService</span><span class="params">(String name)</span> throws RemoteException </span>&#123;</div><div class="line">  mRemote.transact(GET_SERVICE_TRANSACTION, data, reply, <span class="number">0</span>);</div><div class="line">  <span class="comment">// 终于获取到name对应的服务的binder引用</span></div><div class="line">  IBinder binder = reply.readStrongBinder();</div><div class="line">  reply.recycle();</div><div class="line">  data.recycle();</div><div class="line">  <span class="keyword">return</span> binder;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Parcel.cpp#1334" target="_blank" rel="external"><code>readStrongBinder</code>函数</a>中获取对应服务的binder引用实际是通过<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/native/libs/binder/Parcel.cpp#293" target="_blank" rel="external"><code>unflatten_binder</code>函数</a>得到：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">status_t</span> unflatten_binder(<span class="keyword">const</span> sp&lt;ProcessState&gt;&amp; proc,</div><div class="line">    <span class="keyword">const</span> Parcel&amp; in, sp&lt;IBinder&gt;* out) &#123;</div><div class="line">    <span class="comment">// ServiceManager返回的是handle</span></div><div class="line">    <span class="keyword">case</span> BINDER_TYPE_HANDLE:</div><div class="line">                *out = proc-&gt;getStrongProxyForHandle(flat-&gt;handle);</div><div class="line">                <span class="keyword">return</span> finish_unflatten_binder(</div><div class="line">                    <span class="keyword">static_cast</span>&lt;BpBinder*&gt;(out-&gt;get()), *flat, in);</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>调用到ProcessState类的<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/IVibratorService.aidl" target="_blank" rel="external"><code>getStrongProxyForHandle</code>函数</a>，因为是首次，不存在该handle的BpBinder对象，所以会new一个<code>BpBinder(handler)</code>的对象，后面再次调用<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/IVibratorService.aidl" target="_blank" rel="external"><code>getStrongProxyForHandle</code>函数</a>时，则会直接从ProcessState类的<code>mHandleToObject</code>成员中找出来。即<code>ServiceManager.getService(&quot;vibrator&quot;)</code>得到了对应服务的一个BpBinder对象。</p>
+<p>再回到<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/SystemVibrator.java#36" target="_blank" rel="external">ServiceManager.getService(“vibrator”)</a>例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">SystemVibrator</span><span class="params">()</span> </span>&#123;</div><div class="line">  mService = IVibratorService.Stub.asInterface(</div><div class="line">    ServiceManager.getService(<span class="string">"vibrator"</span>));</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其中<a href="http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/IVibratorService.aidl" target="_blank" rel="external">IVibratorService</a>类是由aidl程序生成出来，即将BpBinder对象转成了与服务相关联的对象，只有就可以直接通过<code>mService</code>调用<code>vibrator</code>提供的hasVIbrator/vibrate/vibratePattern/cancelVibrate的函数功能了。</p>
+<p><strong> <span id="native_bpbinder_to_java">如何将c/c++层获得到的BpBinder对象指针转到Java层BinderProxy对象?</span>：</strong><br><figure class="highlight c++"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 其中val实际指向的类型为BpBinder</span></div><div class="line"><span class="function">jobject <span class="title">javaObjectForIBinder</span><span class="params">(JNIEnv* env, <span class="keyword">const</span> sp&lt;IBinder&gt;&amp; val)</span></span></div><div class="line">&#123;</div><div class="line">    <span class="keyword">if</span> (val == <span class="literal">NULL</span>) <span class="keyword">return</span> <span class="literal">NULL</span>;</div><div class="line"></div><div class="line">    <span class="keyword">if</span> (val-&gt;checkSubclass(&amp;gBinderOffsets)) &#123;  <span class="comment">// val实际类型为BpBinder，未重写checkSubclass，此处返回false</span></div><div class="line">        <span class="comment">// One of our own!</span></div><div class="line">        jobject object = <span class="keyword">static_cast</span>&lt;JavaBBinder*&gt;(val.get())-&gt;object();</div><div class="line">        LOGDEATH(<span class="string">"objectForBinder %p: it's our own %p!\n"</span>, val.get(), object);</div><div class="line">        <span class="keyword">return</span> object;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// For the rest of the function we will hold this lock, to serialize</span></div><div class="line">    <span class="comment">// looking/creation of Java proxies for native Binder proxies.</span></div><div class="line">    AutoMutex _l(mProxyLock);</div><div class="line"></div><div class="line">    <span class="comment">// Someone else's...  do we know about it?</span></div><div class="line">    jobject object = (jobject)val-&gt;findObject(&amp;gBinderProxyOffsets);</div><div class="line">    <span class="keyword">if</span> (object != <span class="literal">NULL</span>) &#123;</div><div class="line">        jobject res = jniGetReferent(env, object);</div><div class="line">        <span class="keyword">if</span> (res != <span class="literal">NULL</span>) &#123;</div><div class="line">            ALOGV(<span class="string">"objectForBinder %p: found existing %p!\n"</span>, val.get(), res);</div><div class="line">            <span class="keyword">return</span> res;</div><div class="line">        &#125;</div><div class="line">        LOGDEATH(<span class="string">"Proxy object %p of IBinder %p no longer in working set!!!"</span>, object, val.get());</div><div class="line">        android_atomic_dec(&amp;gNumProxyRefs);</div><div class="line">        val-&gt;detachObject(&amp;gBinderProxyOffsets);</div><div class="line">        env-&gt;DeleteGlobalRef(object);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// 创建BinderProxy类对象</span></div><div class="line">    object = env-&gt;NewObject(gBinderProxyOffsets.mClass, gBinderProxyOffsets.mConstructor);</div><div class="line">    <span class="keyword">if</span> (object != <span class="literal">NULL</span>) &#123;</div><div class="line">        LOGDEATH(<span class="string">"objectForBinder %p: created new proxy %p !\n"</span>, val.get(), object);</div><div class="line">        <span class="comment">// The proxy holds a reference to the native object.</span></div><div class="line">        <span class="comment">// BpBinder的对象地址赋值到java层的BinderProxy类的mObject成员（新SDK已经为long类型）</span></div><div class="line">        env-&gt;SetIntField(object, gBinderProxyOffsets.mObject, (<span class="keyword">int</span>)val.get());</div><div class="line">        val-&gt;incStrong((<span class="keyword">void</span>*)javaObjectForIBinder);</div><div class="line"></div><div class="line">        <span class="comment">// The native object needs to hold a weak reference back to the</span></div><div class="line">        <span class="comment">// proxy, so we can retrieve the same proxy if it is still active.</span></div><div class="line">        <span class="comment">// gBinderProxyOffsets.mSelf是指向BinderProxy this的WeakReference</span></div><div class="line">        jobject refObject = env-&gt;NewGlobalRef(env-&gt;GetObjectField(object, gBinderProxyOffsets.mSelf));</div><div class="line">        val-&gt;attachObject(&amp;gBinderProxyOffsets, refObject,</div><div class="line">                jnienv_to_javavm(env), proxy_cleanup);</div><div class="line"></div><div class="line">        <span class="comment">// Also remember the death recipients registered on this proxy</span></div><div class="line">        sp&lt;DeathRecipientList&gt; drl = <span class="keyword">new</span> DeathRecipientList;</div><div class="line">        drl-&gt;incStrong((<span class="keyword">void</span>*)javaObjectForIBinder);</div><div class="line">        env-&gt;SetIntField(object, gBinderProxyOffsets.mOrgue, <span class="keyword">reinterpret_cast</span>&lt;jint&gt;(drl.get()));</div><div class="line"></div><div class="line">        <span class="comment">// Note that a new object reference has been created.</span></div><div class="line">        android_atomic_inc(&amp;gNumProxyRefs);</div><div class="line">        incRefsCreated(env);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> object;  返回java类型为BinderProxy的对象，其mObject成员指向的是BpBinder对象地址</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h1 id="如何通过Context获得相关服务的"><a href="#如何通过Context获得相关服务的" class="headerlink" title="如何通过Context获得相关服务的"></a>如何通过Context获得相关服务的</h1><p>从<code>ContextImpl</code>类中可以看出，每个Context都有缓存了多个系统服务的Binder代理：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">final</span> Object[] mServiceCache = SystemServiceRegistry.createServiceCache();</div></pre></td></tr></table></figure></p>
+<p><code>SystemServiceRegistry</code>类内的static域内缓存了多个系统服务的binder，注册的服务同时也会被缓存到<code>ContextImpl</code>的mServiceCache成员中。<br><code>SystemServiceRegistry</code>类注册服务的代码中，就是调用形如<code>IBinder b = ServiceManager.getService(Context.ACCOUNT_SERVICE);</code>代码，来获取相关的服务的Binder代理。</p>
+<p>调用了ContextImpl类的getSystemService获取对应服务<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// ContextImpl类</span></div><div class="line"><span class="meta">@Override</span></div><div class="line"> <span class="function"><span class="keyword">public</span> Object <span class="title">getSystemService</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">     <span class="keyword">return</span> SystemServiceRegistry.getSystemService(<span class="keyword">this</span>, name);</div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>而其实际最终调用到的服务的binder代码段如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// SystemServiceRegistry类</span></div><div class="line"><span class="comment">/**</span></div><div class="line"> * Gets a system service from a given context.</div><div class="line"> */</div><div class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Object <span class="title">getSystemService</span><span class="params">(ContextImpl ctx, String name)</span> </span>&#123;</div><div class="line">    ServiceFetcher&lt;?&gt; fetcher = SYSTEM_SERVICE_FETCHERS.get(name);  <span class="comment">// SYSTEM_SERVICE_FETCHERS是map数据，key为服务名，value为相应的服务binder</span></div><div class="line">    <span class="keyword">return</span> fetcher != <span class="keyword">null</span> ? fetcher.getService(ctx) : <span class="keyword">null</span>;    <span class="comment">// 如果服务的binder还不存在，则创建，并缓存到ContextImpl类中的mServiceCache对象数组中</span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+      
+    </div>
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Android/" rel="tag">#Android</a>
+          
+            <a href="/tags/Binder/" rel="tag">#Binder</a>
+          
+            <a href="/tags/ServiceManager/" rel="tag">#ServiceManager</a>
+          
+        </div>
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/05/01/ServiceManager管理注册服务/" rel="next" title="ServiceManager管理注册服务">
+                <i class="fa fa-chevron-left"></i> ServiceManager管理注册服务
+              </a>
+            
+          </div>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/06/01/Framework的漫漫长路/" rel="prev" title="Framework的漫漫长路">
+                Framework的漫漫长路 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.png"
+               alt="wangzs" />
+          <p class="site-author-name" itemprop="name">wangzs</p>
+          <p class="site-description motion-element" itemprop="description">wangzs</p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">12</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+          
+          
+
+          
+            <div class="site-state-item site-state-tags">
+              <a href="/tags">
+                <span class="site-state-item-count">11</span>
+                <span class="site-state-item-name">标签</span>
+              </a>
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/wangzs" target="_blank">
+                  
+                    <i class="fa fa-github"></i> github
+                  
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/volix" target="_blank">
+                  
+                    <i class="fa fa-weibo"></i> weibo
+                  
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+      </section>
+
+      
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc-indicator-top post-toc-indicator">
+            <i class="fa fa-angle-double-up"></i>
+          </div>
+          <div class="post-toc">
+            
+              
+            
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Java层获取Vibrator服务"><span class="nav-number">1.</span> <span class="nav-text">Java层获取Vibrator服务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#通过ServiceManager获取vibrator服务"><span class="nav-number">2.</span> <span class="nav-text">通过ServiceManager获取vibrator服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#ServiceManager管理类"><span class="nav-number">2.1.</span> <span class="nav-text">ServiceManager管理类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#根据service名获取对应服务"><span class="nav-number">2.1.1.</span> <span class="nav-text">根据service名获取对应服务</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#获取ServiceManager的Binder代理"><span class="nav-number">2.1.1.1.</span> <span class="nav-text">获取ServiceManager的Binder代理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#获取指定name的service"><span class="nav-number">2.1.1.2.</span> <span class="nav-text">获取指定name的service</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ServiceManager唤醒处理BINDER-WORK-TRANSACTION类型事务"><span class="nav-number">2.1.1.2.1.</span> <span class="nav-text">ServiceManager唤醒处理BINDER_WORK_TRANSACTION类型事务</span></a></li></ol></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#如何通过Context获得相关服务的"><span class="nav-number">3.</span> <span class="nav-text">如何通过Context获得相关服务的</span></a></li></ol></div>
+            
+          </div>
+          <div class="post-toc-indicator-bottom post-toc-indicator">
+            <i class="fa fa-angle-double-down"></i>
+          </div>
+        </section>
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy;  2016 - 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wangzs</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+
+  
+
+
+
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js"></script>
+
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=0.5.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=0.5.0"></script>
+
+
+
+  
+  
+
+  
+  
+<script type="text/javascript" src="/js/src/scrollspy.js?v=0.5.0"></script>
+
+<script type="text/javascript" id="sidebar.toc.highlight">
+  $(document).ready(function () {
+    var tocSelector = '.post-toc';
+    var $tocSelector = $(tocSelector);
+    var activeCurrentSelector = '.active-current';
+
+    $tocSelector
+      .on('activate.bs.scrollspy', function () {
+        var $currentActiveElement = $(tocSelector + ' .active').last();
+
+        removeCurrentActiveClass();
+        $currentActiveElement.addClass('active-current');
+
+        $tocSelector[0].scrollTop = $currentActiveElement.position().top;
+      })
+      .on('clear.bs.scrollspy', function () {
+        removeCurrentActiveClass();
+      });
+
+    function removeCurrentActiveClass () {
+      $(tocSelector + ' ' + activeCurrentSelector)
+        .removeClass(activeCurrentSelector.substring(1));
+    }
+
+    function processTOC () {
+      getTOCMaxHeight();
+      toggleTOCOverflowIndicators();
+    }
+
+    function getTOCMaxHeight () {
+      var height = $('.sidebar').height() -
+                   $tocSelector.position().top -
+                   $('.post-toc-indicator-bottom').height();
+
+      $tocSelector.css('height', height);
+
+      return height;
+    }
+
+    function toggleTOCOverflowIndicators () {
+      tocOverflowIndicator(
+        '.post-toc-indicator-top',
+        $tocSelector.scrollTop() > 0 ? 'show' : 'hide'
+      );
+
+      tocOverflowIndicator(
+        '.post-toc-indicator-bottom',
+        $tocSelector.scrollTop() >= $tocSelector.find('ol').height() - $tocSelector.height() ? 'hide' : 'show'
+      )
+    }
+
+    $(document).on('sidebar.motion.complete', function () {
+      processTOC();
+    });
+
+    $('body').scrollspy({ target: tocSelector });
+    $(window).on('resize', function () {
+      if ( $('.sidebar').hasClass('sidebar-active') ) {
+        processTOC();
+      }
+    });
+
+    onScroll($tocSelector);
+
+    function onScroll (element) {
+      element.on('mousewheel DOMMouseScroll', function (event) {
+          var oe = event.originalEvent;
+          var delta = oe.wheelDelta || -oe.detail;
+
+          this.scrollTop += ( delta < 0 ? 1 : -1 ) * 30;
+          event.preventDefault();
+
+          toggleTOCOverflowIndicators();
+      });
+    }
+
+    function tocOverflowIndicator (indicator, action) {
+      var $indicator = $(indicator);
+      var opacity = action === 'show' ? 1 : 0;
+      $indicator.velocity ?
+        $indicator.velocity('stop').velocity({
+          opacity: opacity
+        }, { duration: 100 }) :
+        $indicator.stop().animate({
+          opacity: opacity
+        }, 100);
+    }
+
+  });
+</script>
+
+<script type="text/javascript" id="sidebar.nav">
+  $(document).ready(function () {
+    var html = $('html');
+    var TAB_ANIMATE_DURATION = 200;
+    var hasVelocity = $.isFunction(html.velocity);
+
+    $('.sidebar-nav li').on('click', function () {
+      var item = $(this);
+      var activeTabClassName = 'sidebar-nav-active';
+      var activePanelClassName = 'sidebar-panel-active';
+      if (item.hasClass(activeTabClassName)) {
+        return;
+      }
+
+      var currentTarget = $('.' + activePanelClassName);
+      var target = $('.' + item.data('target'));
+
+      hasVelocity ?
+        currentTarget.velocity('transition.slideUpOut', TAB_ANIMATE_DURATION, function () {
+          target
+            .velocity('stop')
+            .velocity('transition.slideDownIn', TAB_ANIMATE_DURATION)
+            .addClass(activePanelClassName);
+        }) :
+        currentTarget.animate({ opacity: 0 }, TAB_ANIMATE_DURATION, function () {
+          currentTarget.hide();
+          target
+            .stop()
+            .css({'opacity': 0, 'display': 'block'})
+            .animate({ opacity: 1 }, TAB_ANIMATE_DURATION, function () {
+              currentTarget.removeClass(activePanelClassName);
+              target.addClass(activePanelClassName);
+            });
+        });
+
+      item.siblings().removeClass(activeTabClassName);
+      item.addClass(activeTabClassName);
+    });
+
+    $('.post-toc a').on('click', function (e) {
+      e.preventDefault();
+      var targetSelector = NexT.utils.escapeSelector(this.getAttribute('href'));
+      var offset = $(targetSelector).offset().top;
+      hasVelocity ?
+        html.velocity('stop').velocity('scroll', {
+          offset: offset  + 'px',
+          mobileHA: false
+        }) :
+        $('html, body').stop().animate({
+          scrollTop: offset
+        }, 500);
+    });
+
+    // Expand sidebar on post detail page by default, when post has a toc.
+    NexT.motion.middleWares.sidebar = function () {
+      var $tocContent = $('.post-toc-content');
+
+      if (CONFIG.scheme !== 'Pisces' && (CONFIG.sidebar.display === 'post' || CONFIG.sidebar.display === 'always')) {
+        if ($tocContent.length > 0 && $tocContent.html().trim().length > 0) {
+          NexT.utils.displaySidebar();
+        }
+      }
+    };
+  });
+</script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=0.5.0"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+  
+  
+  
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+  </script>
+
+  <script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+      var all = MathJax.Hub.getAllJax(), i;
+      for (i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  </script>
+
+  
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/MathJax.js"></script>
+    <script type="text/javascript" src="http://cdn.staticfile.org/mathjax/2.4.0/config/TeX-AMS-MML_HTMLorMML.js"></script>
+  
+
+
+  
+
+
+</body>
+</html>
