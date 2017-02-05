@@ -462,21 +462,61 @@ private boolean resumeTopActivityInnerLocked(ActivityRecord prev, Bundle options
 
 
 
-## [Handle][7]简析
+## [Handle][7]/[Looper][63]简析
 
+handle的使用离不开[Looper][63]类，首先介绍一下Looper
 
+### [Looper][63]的使用
 
+```java
+// xx Thread的run内
+{
+  Looper.prepare();
+  ...
+  Looper.loop();
+}
+// 实例：ActivityThread内的main
+{
+  Looper.prepareMainLooper();
+  ...
+  Looper.loop();
+}
+```
 
+### [Handle][7]的使用
+```java
+// 在UI线程创建Handler对象
+Handler myHandler = new Handler() {  
+  public void handleMessage(Message msg) {   
+    switch (msg.what) {   
+      case xx_TYPE:   
+      // 更新某个UI 
+      break;   
+    }   
+  }   
+};
+// 在非UI线程调用了sendMessage
+Message message = new Message();
+message.what = xx_TYPE;
+myHandler.sendMessage(message); 
 
+// 创建Handler可以有多种参数模式，具体看Handler代码
+```
 
+`prepareMainLooper`与`prepare`主要的区别在于`prepareMainLooper`主线程（此处为UI线程）是不允许quit，并且将主线程的looper赋值给了Looper的成员`sMainLooper`，可以直接获取。
 
+**Looper.prepare的主要功能是：为每个线程创建一个Looper对象。** 任何线程都是调用Looper的`myLooper`函数获取自己线程的Looper，保证不同线程创建不同的Looper是由[ThreadLocal][64]这个类实现。
+Looper对象内部有一个`MessageQueue`类型成员*mQueue*来管理其消息队列，当执行`loop`函数后，就会进入到无限循环内，每次循环都需要先从消息队列中取出下一个Message，Message中是有一个Handle类型的target成员，从消息队列中取出Message后，会调用该`target`来消费此Message。
 
+**而Message是如何发出的呢？上面的`target`是何时设置的？**
+Handler在创建之初，若不主动设置Looper，默认是将当前所在线程A的Looper赋值给Handler的`mLooper`成员，并且将Looper的消息队列管理*mQueue*对象也赋值给Handler的`mQueue`，这样在创建Handler对象的时候，就绑定了对应线程的Looper对象；
+这时候，如果其他线程B想触发某个逻辑在线程A中执行（如在非UI线程更新UI），只需要通过前面创建的Handler对象调用`sendMessage`等相关函数即可，消息发送到了线程A的Looper的*mQueue*成员中；这样，上面的`loop`中就会取到此Message，并最终又到Handler的[dispatchMessage][65]内做实际的逻辑处理。
+`target`对象的设置就是在调用handler的发送Message时设置的，`target`指向的就是调用`sendMessage`的handler。（也就是谁发的Message，谁就负责处理）
 
-
-
-
-
-
+由Handler的[dispatchMessage][65]函数内部逻辑可以看出，消息的实际处理逻辑可以有三种方式:
+> 1. 发消息时，其Message参数对象自身有设置了Message的`callback`成员（`postMessage`就用的此中方法）
+> 2. Handler对象创建时有在其构造函数中设置Handler的`mCallback `成员（Callback类型）
+> 3. 实现了Handler的成员函数`handleMessage`
 
 
 
@@ -549,3 +589,6 @@ private boolean resumeTopActivityInnerLocked(ActivityRecord prev, Bundle options
 [60]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3247
 [61]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3106
 [62]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/services/core/java/com/android/server/am/ActivityManagerService.java#3116
+[63]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/Looper.java
+[64]: http://androidxref.com/6.0.1_r10/xref/libcore/luni/src/main/java/java/lang/ThreadLocal.java
+[65]: http://androidxref.com/6.0.1_r10/xref/frameworks/base/core/java/android/os/Handler.java#dispatchMessage
