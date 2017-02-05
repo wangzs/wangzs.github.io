@@ -7,6 +7,7 @@ tag: [Android, NDK, c++]
 主要有两种：`primitive types`和`Reference types`
 ### Primitive Types
 基础类型的对应表：
+
 | **Java Type** | **JNI Type** | **c++ Type**   | **Size** |
 | ------------- | ------------ | -------------- | -------- |
 | Boolean       | Jboolean     | unsigned char  | 8 bit    |
@@ -17,6 +18,7 @@ tag: [Android, NDK, c++]
 | Long          | Jlong        | long long      | 64 bit   |
 | Float         | Jfloat       | float          | 32 bit   |
 | Double        | Jdouble      | double         | 64 bit   |
+<!--more-->
 
 ### Reference Types
 | **Java Type**       | **Native Type** |

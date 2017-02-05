@@ -12,6 +12,7 @@ tag: [Android, 项目Log]
 3. 解压zip文件；
 4. 拷贝所有的so文件到`/data/data/project_directory/app_lib`中；
 5. 加载so，初始化库，使用库功能
+<!--more-->
 
 # 具体步骤
 ## 打包so文件
